@@ -11,7 +11,7 @@ correctness is ~flat across the panel) or overpays for tasks any model in
 the panel solves.
 
 Runs the exact same 16 task-cells as the panel:
-  - 10 light prompts P1-P10 (data/prompts.yaml), baseline only
+  - 10 light prompts P1-P10 (config/prompts.yaml), baseline only
   - 3 heavy tasks H1-H3 (code / finance_calc / finance_interp,
     src/heavy_tasks.py), x 2 conditions (baseline, invited_auto)
 5 passes per cell = 80 calls total. thinking_budget=16384,
@@ -32,8 +32,7 @@ without this the run is worthless):
     like they were dropped by the routed model)
 
 Writes to results/auto/<run_id>.jsonl — a new file. Never touches
-results/heavy, results/full, reasoning-data.json, or
-docs/reasoning_findings.md.
+results/heavy or results/full.
 
 Cost guard: run stops (not crashes) if cumulative cost_usd across all rows
 reaches PRICE_CAP_USD. Partial results are still valid data.

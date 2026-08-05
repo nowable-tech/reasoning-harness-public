@@ -1267,11 +1267,17 @@ def _print_judge_row(
 def run_validate_judges(source_run_id: Optional[str] = None) -> int:
     """
     Gate step: run both judges on Gemma's traces only (English/Danish — readable
-    by Lars). Print a side-by-side of trace excerpt + judge scores + justifications
-    so the human can verify judge quality before trusting them on Chinese traces.
+    by the operator). Print a side-by-side of trace excerpt + judge scores +
+    justifications so the human can verify judge quality before trusting them
+    on Chinese traces.
 
     STOPS HERE. Does not proceed to Chinese traces. Run --judge after confirmation.
     """
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        print("\n  ERROR: OPENROUTER_API_KEY not set — required for judge calls. "
+              "See .env.example.\n")
+        return 1
+
     panel = load_panel()
 
     try:
@@ -1292,7 +1298,7 @@ def run_validate_judges(source_run_id: Optional[str] = None) -> int:
     print(f"\n{'═'*100}")
     print(f"  PHASE 2 — JUDGE VALIDATION GATE")
     print(f"  Source: {p1_run_id}  |  Scoring: gemma_4 only ({len(gemma_rows)} traces)")
-    print(f"  Both judges read Gemma traces (English) — Lars can verify scores before trusting on Chinese.")
+    print(f"  Both judges read Gemma traces (English) — verify scores manually before trusting on Chinese.")
     print(f"  LEGIBILITY ONLY: correctness and faithfulness are out of scope.")
     print(f"{'═'*100}")
 
@@ -1403,6 +1409,11 @@ def run_judge(source_run_id: Optional[str] = None) -> int:
     LEGIBILITY ONLY — no correctness, no faithfulness, no economy mixing.
     """
     import statistics
+
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        print("\n  ERROR: OPENROUTER_API_KEY not set — required for judge calls. "
+              "See .env.example.\n")
+        return 1
 
     panel = load_panel()
 
@@ -1705,7 +1716,8 @@ def run_langcost(full: bool = False, steer: bool = False, allow_direct: bool = F
     Language-cost experiment: same content in da/en/zh × 5 open models.
 
     Pilot (default): M1 × 3 langs × 5 models = 15 calls, then cost projection
-    for the full 90-call grid and stop.  Lars confirms, then runs --langcost-full.
+    for the full 90-call grid and stop. Confirm the projected cost manually,
+    then run --langcost-full.
 
     Full (--langcost-full): M1–M6 × 3 langs × 5 models = 90 calls.
 
@@ -3006,7 +3018,7 @@ def run_variance(passes: int = 2, allow_direct: bool = False) -> int:
 
 TOOLS3_TOOL_RELEVANT_PROMPTS: dict[str, str] = {
     # prompt_id -> which tool it plausibly calls for. Confirmed against
-    # data/prompts.yaml types: P3/P5/P6/P7/P8 are computation/code/structure
+    # config/prompts.yaml types: P3/P5/P6/P7/P8 are computation/code/structure
     # (repl-shaped); P4 is da_legal/very_high citing specific §-rules a model
     # may want to verify (search-shaped) — also the prompt Kimi searched on
     # in the first --tools run.

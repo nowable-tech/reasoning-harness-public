@@ -1,19 +1,20 @@
-# Flersproget promptsæt til sprogets-pris-forsøget.
+# Multilingual prompt set for the language-cost experiment.
 #
-# OVERSÆTTELSES-FORBEHOLD (læs dette inden du stoler på resultaterne):
-# De kinesiske (zh) varianter er maskinoversat med engelsk som pivot-sprog og
-# er IKKE verificeret af en kyndig kinesisk-taler. Alle konklusioner fra
-# zh-sprogsessioner er betingede og indikative, ikke endelige, indtil
-# oversættelserne er efterprøvet af en kompetent person.
+# TRANSLATION CAVEAT (read before trusting the results):
+# The Chinese (zh) variants are machine-translated with English as the pivot
+# language and have NOT been verified by a competent Chinese speaker. All
+# conclusions drawn from zh-language sessions are conditional and indicative,
+# not final, until the translations have been checked by a competent person.
 #
-# Pivot-sprog for alle oversættelser: engelsk.
-# De tre varianter (da / en / zh) udtrykker semantisk identisk indhold —
-# kun overflate-sproget varierer. Længde og mening er tilpasset så tæt som muligt.
-# Engelske variabelnavne i kode-opgaver (M4, M5) sikrer at selve koden er sprogfri.
+# Pivot language for all translations: English.
+# The three variants (da / en / zh) express semantically identical content —
+# only the surface language varies. Length and meaning are matched as
+# closely as possible. English variable names in the code tasks (M4, M5)
+# keep the code itself language-free.
 #
-# facit er det blinde svar til korrekthedstjek (M2, M3, M4, M5).
-# facit SENDES ALDRIG til modellerne — load_multilang_prompts() stripper det.
-# Runtime-assert: "facit not in request-path object" (spejler prompts.yaml-mønstret).
+# facit is the blind answer used for correctness checking (M2, M3, M4, M5).
+# facit is NEVER sent to the models — load_multilang_prompts() strips it.
+# Runtime assert: "facit not in request-path object" (mirrors prompts.yaml's pattern).
 
 meta:
   phase: langcost

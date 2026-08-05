@@ -6,7 +6,6 @@ from pathlib import Path
 import yaml
 
 CONFIG_DIR = Path(__file__).parent.parent / "config"
-DATA_DIR = Path(__file__).parent.parent / "data"
 
 
 @lru_cache(maxsize=1)
@@ -32,13 +31,13 @@ def load_pricing() -> dict:
 
 def load_prompts() -> dict[str, dict]:
     """
-    Load prompts from data/prompts.yaml, keyed by prompt ID.
+    Load prompts from config/prompts.yaml, keyed by prompt ID.
 
     SECURITY INVARIANT: facit is stripped before returning. It must never
     appear in any outgoing model request. The function asserts this on every
     call — if the strip ever fails, execution stops with a hard error.
     """
-    with open(DATA_DIR / "prompts.yaml") as f:
+    with open(CONFIG_DIR / "prompts.yaml") as f:
         raw = yaml.safe_load(f)
 
     result: dict[str, dict] = {}
@@ -61,12 +60,12 @@ def load_prompts() -> dict[str, dict]:
 
 def load_multilang_prompts() -> dict[str, dict]:
     """
-    Load multilingual prompts from data/prompts_multilang.yaml, keyed by prompt ID.
+    Load multilingual prompts from config/prompts_multilang.yaml, keyed by prompt ID.
 
     SECURITY INVARIANT: identical to load_prompts() — facit is stripped before
     returning. The variants dict (da/en/zh) is safe to send; facit is not.
     """
-    with open(DATA_DIR / "prompts_multilang.yaml") as f:
+    with open(CONFIG_DIR / "prompts_multilang.yaml") as f:
         raw = yaml.safe_load(f)
 
     result: dict[str, dict] = {}

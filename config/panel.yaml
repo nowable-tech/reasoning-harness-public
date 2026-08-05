@@ -98,7 +98,7 @@ models:
     openrouter_model_id: google/gemini-3.1-pro-preview
 
   # --- Added 2026-07-19 for --heavy on the three new models below. ---
-  # thinking_budget=16384 on these rows only (see docs/handover — the existing
+  # thinking_budget=16384 on these rows only — the existing
   # eight models' rows above are deliberately untouched; they still ran their
   # historical results at 4096, and this addition does not retroactively change
   # what was measured for them). reasoning_effort_sent is new: the panel's

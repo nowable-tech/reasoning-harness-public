@@ -7,7 +7,7 @@
 
 Datasets are downloaded once and cached under data/heavy/ (gitignored — these
 are third-party redistributions, not our own curated content, unlike
-data/prompts.yaml).
+config/prompts.yaml).
 
 SECURITY INVARIANT: load_heavy_tasks() defaults to with_facit=False and never
 includes grading data in that path — mirrors config_loader.load_prompts()'s

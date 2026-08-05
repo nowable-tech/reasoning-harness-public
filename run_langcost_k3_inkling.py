@@ -1,11 +1,11 @@
 """
-Standalone supplement: language-cost experiment (docs/forsoegsspec_sprog_omkostning_reasoning.md)
-for the two models missing from the original run -- kimi_k3 and inkling.
-Both were added to the panel after 20260626T162923_langcost_full ran, so
-LANGCOST_MODELS in run.py (still just the original 5) never covered them.
+Standalone supplement: language-cost experiment for the two models missing
+from the original run -- kimi_k3 and inkling. Both were added to the panel
+after 20260626T162923_langcost_full ran, so LANGCOST_MODELS in run.py (still
+just the original 5) never covered them.
 
 Same design as the original run: 6 culture-neutral tasks (M1-M6,
-data/prompts_multilang.yaml) x 3 language variants (da/en/zh) x 1 pass =
+config/prompts_multilang.yaml) x 3 language variants (da/en/zh) x 1 pass =
 18 calls per model, 36 total. thinking_budget=16384, reasoning_effort="high"
 -- identical to the original run and to the rest of the panel. Both models
 have trace_exposure=raw, satisfying the experiment's raw-trace requirement

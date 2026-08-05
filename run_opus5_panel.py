@@ -9,7 +9,7 @@ save_heavy_result, grade_heavy, compute_cost, ...) so the output schema is
 byte-identical to what run_full()/run_heavy() themselves would have produced.
 
 Same conventions as the rest of the series:
-  - 10 light prompts P1-P10 (data/prompts.yaml), baseline only, 1 pass each
+  - 10 light prompts P1-P10 (config/prompts.yaml), baseline only, 1 pass each
   - 3 heavy tasks H1-H3 (code / finance_calc / finance_interp,
     src/heavy_tasks.py), x 2 conditions (baseline, invited_auto), 5 passes
     each = 30 heavy calls
@@ -25,7 +25,7 @@ fable_5's channel" means both phases, not just the heavy one.
 Writes results/full/<run_id>_full.jsonl + traces (save_result/save_trace,
 identical schema to run_full()) and results/heavy/<run_id>_heavy.jsonl +
 traces (save_heavy_result/save_heavy_trace, identical schema to run_heavy()).
-Never touches run.py, any existing results file, or docs/reasoning_findings.md.
+Never touches run.py or any existing results file.
 
 Cost guard: stops (not crashes) if cumulative cost_usd reaches PRICE_CAP_USD.
 Partial results remain valid data.

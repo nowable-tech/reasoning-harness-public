@@ -2,8 +2,6 @@
 Anchored legibility rubric — verbatim replacement for the loose redundancy
 instruction that was in _RUBRIC_TEMPLATE.
 
-Source: docs/legibilitets_rubrik.md
-
 Defines the floor principle (verification / one conclusion / structural
 scaffolding are functional and never count as redundancy), the
 counts-vs-does-not-count lists, the 1-5 redundancy scale with examples,

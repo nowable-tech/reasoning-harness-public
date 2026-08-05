@@ -51,8 +51,9 @@ class AnthropicAdapter(BaseAdapter):
 
     def _call_direct(self, prompt: str, thinking_budget: int) -> ModelResponse:
         import anthropic
+        import os
 
-        client = anthropic.Anthropic(api_key=__import__("os").environ["ANTHROPIC_API_KEY"])
+        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         model_id = self.config["model_id"]
 
         # Claude 4.X models (opus-4, sonnet-4 ≥ 4.8) use the adaptive thinking API.

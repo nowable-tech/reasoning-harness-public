@@ -2,8 +2,8 @@
 
 Runs mistralai/mistral-medium-3.5 through the OpenRouter OpenAI-compatible
 gateway. The smoke test MUST confirm that OpenRouter actually forwards the raw
-reasoning trace. If only a summary or nothing is returned, stop and report to
-Lars — Mistral's legibility participation depends on raw trace availability.
+reasoning trace. If only a summary or nothing is returned, stop and flag it —
+Mistral's legibility participation depends on raw trace availability.
 
 Reasoning is passed via reasoning.effort=high in extra_body (OpenRouter maps
 this to Mistral's configurable reasoning_effort). include_reasoning=True

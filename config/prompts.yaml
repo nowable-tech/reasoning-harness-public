@@ -1,14 +1,18 @@
-# Fase 1 prompt-datasæt — reasoning benchmark
-# Kun feltet `prompt` sendes til modellen. `facit` er blindt, bruges først i
-# Fase 3 (korrekthed) og må ALDRIG indgå i requesten til modellen.
+# Phase 1 prompt set — reasoning benchmark (light suite, 10 tasks).
+# Only the `prompt` field is sent to the model. `facit` (the answer key) is
+# blind — used only in Phase 3 (correctness grading) and must NEVER appear
+# in the model request.
 # language_probe: da_simple | da_forcing | da_framed_neutral | da_open
 # reasoning_load: low | medium | high | very_high
+#
+# Task text is Danish by design — this is a Danish-language reasoning
+# benchmark. See ../README.md for the experiment rationale.
 
 meta:
   phase: 1
-  language_run: danish_only        # første kørsel; engelsk kontrol er et separat senere forsøg
-  send_field: prompt               # eneste felt der sendes til modellen
-  blind_field: facit               # forbeholdt Fase 3, sendes aldrig
+  language_run: danish_only        # first run; an English control is a separate, later experiment
+  send_field: prompt               # the only field sent to the model
+  blind_field: facit               # reserved for Phase 3, never sent
 
 prompts:
 

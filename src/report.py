@@ -185,7 +185,7 @@ def generate_validation_html(
         f"<b>Source:</b> {html.escape(source_run_id)} &nbsp; "
         f"<b>Generated:</b> {generated_at}</p>",
         "<p><em>Scoring: gemma_4 only (10 traces). "
-        "Both judges read Gemma traces (English) — Lars can verify before trusting on Chinese.</em></p>",
+        "Both judges read Gemma traces (English) — verify manually before trusting on Chinese.</em></p>",
         "<hr>",
         *blocks,
     ]

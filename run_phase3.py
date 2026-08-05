@@ -7,7 +7,7 @@ Grades 6 facit prompts (P3–P8) across all 6 models using two paths:
   Programmatic (exact): P5 (math), P6 (logic), P7 (JSON)
   LLM grader (blind):   P3 (legal), P4 (legal), P8 (code bug)
 
-Stops after generating the HTML review for P3/P4 — requires Lars's confirmation
+Stops after generating the HTML review for P3/P4 — requires manual confirmation
 on the legal verdicts before results are considered final.
 
 Usage:
@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import html as html_lib
 import json
+import os
 import pathlib
 import sys
 from datetime import datetime, timezone
@@ -243,6 +244,14 @@ def main() -> None:
         help="Phase 1 full run ID (default: most recent results/full/*.jsonl)",
     )
     args = parser.parse_args()
+
+    # Fail early: P3/P4/P8 are graded via grade_llm() (blind LLM grader over
+    # OpenRouter). Check up front rather than after P5/P6/P7's programmatic
+    # grades have already run.
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        print("\n  ERROR: OPENROUTER_API_KEY not set — required for the LLM grader "
+              "(P3/P4/P8). See .env.example.\n")
+        sys.exit(1)
 
     # ── Load data ─────────────────────────────────────────────────────────────
     try:
