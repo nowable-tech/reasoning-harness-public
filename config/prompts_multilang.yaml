@@ -1,0 +1,162 @@
+# Flersproget promptsæt til sprogets-pris-forsøget.
+#
+# OVERSÆTTELSES-FORBEHOLD (læs dette inden du stoler på resultaterne):
+# De kinesiske (zh) varianter er maskinoversat med engelsk som pivot-sprog og
+# er IKKE verificeret af en kyndig kinesisk-taler. Alle konklusioner fra
+# zh-sprogsessioner er betingede og indikative, ikke endelige, indtil
+# oversættelserne er efterprøvet af en kompetent person.
+#
+# Pivot-sprog for alle oversættelser: engelsk.
+# De tre varianter (da / en / zh) udtrykker semantisk identisk indhold —
+# kun overflate-sproget varierer. Længde og mening er tilpasset så tæt som muligt.
+# Engelske variabelnavne i kode-opgaver (M4, M5) sikrer at selve koden er sprogfri.
+#
+# facit er det blinde svar til korrekthedstjek (M2, M3, M4, M5).
+# facit SENDES ALDRIG til modellerne — load_multilang_prompts() stripper det.
+# Runtime-assert: "facit not in request-path object" (spejler prompts.yaml-mønstret).
+
+meta:
+  phase: langcost
+  send_fields: [variants.da, variants.en, variants.zh]
+  blind_field: facit
+
+prompts:
+
+  - id: M1
+    type: factual
+    reasoning_load: low
+    carries_correctness: false
+    variants:
+      da: |
+        Forklar kort hvad en checksum er, og hvorfor checksums bruges til at
+        kontrollere dataintegritet. Maksimalt 80 ord.
+      en: |
+        Briefly explain what a checksum is and why checksums are used to verify
+        data integrity. Maximum 80 words.
+      zh: |
+        请简要解释什么是校验和（checksum），以及校验和为什么用于验证数据完整性。
+        请尽量简短作答。
+    facit: null
+
+  - id: M2
+    type: math
+    reasoning_load: high
+    carries_correctness: true
+    variants:
+      da: |
+        Et tog kører de første 120 km med 150 km/t og derefter de næste 180 km
+        med 90 km/t. Hvor mange minutter tager hele turen?
+        Svar med ét tal i minutter.
+      en: |
+        A train travels the first 120 km at 150 km/h and then the next 180 km
+        at 90 km/h. How many minutes does the entire journey take?
+        Answer with a single number in minutes.
+      zh: |
+        一列火车先以150千米每小时的速度行驶120千米，然后以90千米每小时的速度行驶
+        180千米。整段旅程需要多少分钟？请只用一个数字回答。
+    facit: |
+      168 minutter. 120/150 = 0,8 t = 48 min; 180/90 = 2 t = 120 min;
+      i alt 168 min.
+
+  - id: M3
+    type: logic
+    reasoning_load: high
+    carries_correctness: true
+    variants:
+      da: |
+        Fire personer — Anna, Bo, Clara og David — kom ind på pladserne nr. 1
+        til 4 i et løb. David kom nummer 1. Anna kom før Bo. Clara kom lige
+        efter Bo. Angiv den fuldstændige rækkefølge fra nr. 1 til nr. 4.
+      en: |
+        Four people — Anna, Bo, Clara, and David — finished in positions 1 to 4
+        in a race. David finished first. Anna finished before Bo. Clara finished
+        immediately after Bo. State the complete order from position 1 to 4.
+      zh: |
+        安娜（Anna）、博（Bo）、克拉拉（Clara）和大卫（David）四人在一场比赛中
+        分别获得第1至第4名。大卫获得第1名。安娜在博之前到达终点。克拉拉紧接在博
+        之后到达终点。请列出从第1名到第4名的完整顺序。
+    facit: |
+      1. David, 2. Anna, 3. Bo, 4. Clara. (Entydig.)
+
+  - id: M4
+    type: code_structure
+    reasoning_load: medium
+    carries_correctness: true
+    variants:
+      da: |
+        Konvertér følgende tekst til JSON efter skemaet
+        {name: string, age: number, city: string, subscription: "basic" | "premium"}.
+        Returnér kun JSON, intet andet.
+        Tekst: "Alex Johnson er 34 år, bor i Berlin og har et premium-abonnement."
+      en: |
+        Convert the following text to JSON using the schema
+        {name: string, age: number, city: string, subscription: "basic" | "premium"}.
+        Return only the JSON, nothing else.
+        Text: "Alex Johnson is 34 years old, lives in Berlin, and has a premium subscription."
+      zh: |
+        将以下文本转换为符合以下模式的JSON：
+        {name: string, age: number, city: string, subscription: "basic" | "premium"}。
+        只返回JSON，不要其他内容。
+        文本："Alex Johnson，34岁，住在柏林，拥有高级订阅（premium）。"
+    facit: |
+      {"name":"Alex Johnson","age":34,"city":"Berlin","subscription":"premium"}
+
+  - id: M5
+    type: code_bug
+    reasoning_load: high
+    carries_correctness: true
+    variants:
+      da: |
+        Denne Python-funktion skal returnere det største tal i en liste, men den
+        indeholder en fejl. Find fejlen, forklar hvornår den slår fejl, og angiv
+        den rettede linje.
+
+        def find_max(numbers):
+            largest = 0
+            for n in numbers:
+                if n > largest:
+                    largest = n
+            return largest
+      en: |
+        This Python function is supposed to return the largest number in a list,
+        but it contains a bug. Find the bug, explain when it fails, and provide
+        the corrected line.
+
+        def find_max(numbers):
+            largest = 0
+            for n in numbers:
+                if n > largest:
+                    largest = n
+            return largest
+      zh: |
+        以下Python函数应该返回列表中最大的数字，但存在一个错误。请找出该错误，
+        解释它在什么情况下会出错，并给出更正后的代码行。
+
+        def find_max(numbers):
+            largest = 0
+            for n in numbers:
+                if n > largest:
+                    largest = n
+            return largest
+    facit: |
+      `largest` initialiseres til 0. For en liste med kun negative tal returneres
+      0 i stedet for det største (mindst negative) tal. Rettelse:
+      initialisér `largest = numbers[0]` (og håndtér eventuelt tom liste særskilt).
+
+  - id: M6
+    type: open_analysis
+    reasoning_load: high
+    carries_correctness: false
+    variants:
+      da: |
+        Opstil de vigtigste fordele og ulemper ved hjemmearbejde for en
+        kontormedarbejder, og giv en afvejet anbefaling om hvornår hjemmearbejde
+        er hensigtsmæssigt. Maksimalt 200 ord.
+      en: |
+        List the key advantages and disadvantages of remote work for an office
+        worker, and give a balanced recommendation about when remote work is
+        appropriate. Maximum 200 words.
+      zh: |
+        请列出居家办公（远程办公）对办公室员工的主要优缺点，并就何时适合居家办公
+        给出平衡的建议。最多200字。
+    facit: null

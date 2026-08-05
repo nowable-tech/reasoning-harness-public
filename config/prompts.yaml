@@ -1,0 +1,150 @@
+# Fase 1 prompt-datasæt — reasoning benchmark
+# Kun feltet `prompt` sendes til modellen. `facit` er blindt, bruges først i
+# Fase 3 (korrekthed) og må ALDRIG indgå i requesten til modellen.
+# language_probe: da_simple | da_forcing | da_framed_neutral | da_open
+# reasoning_load: low | medium | high | very_high
+
+meta:
+  phase: 1
+  language_run: danish_only        # første kørsel; engelsk kontrol er et separat senere forsøg
+  send_field: prompt               # eneste felt der sendes til modellen
+  blind_field: facit               # forbeholdt Fase 3, sendes aldrig
+
+prompts:
+
+  - id: P1
+    type: da_natural_language
+    reasoning_load: low
+    language_probe: da_simple
+    carries_correctness: false
+    answer_max_words: 120
+    prompt: |
+      Forklar kort og i et venligt sprog, hvad en folkeregisteradresse er, og
+      hvorfor man skal melde flytning til folkeregistret. Maksimalt 120 ord.
+    facit: null
+
+  - id: P2
+    type: da_natural_language
+    reasoning_load: low
+    language_probe: da_simple
+    carries_correctness: false
+    prompt: |
+      Omskriv denne sætning til klart hverdagssprog, som en borger uden juridisk
+      baggrund kan forstå: "Ansøgeren skal senest fire uger efter afgørelsens
+      meddelelse indgive eventuel klage til den myndighed, der har truffet
+      afgørelsen, jf. forvaltningslovens regler herom."
+    facit: null
+
+  - id: P3
+    type: da_legal
+    reasoning_load: high
+    language_probe: da_forcing
+    carries_correctness: true
+    prompt: |
+      En borger modtager en skriftlig afgørelse fra kommunen, meddelt fredag den
+      6. marts 2026. Klagefristen er fire uger fra meddelelsen. Borgerens klage er
+      modtaget hos kommunen fredag den 3. april 2026. Er klagen rettidig?
+      Begrund kort.
+    facit: |
+      Ja, rettidig. Fire uger = 28 dage. 6. marts + 28 dage = 3. april, som er
+      fristens sidste dag. Klage modtaget samme dag er rettidig.
+
+  - id: P4
+    type: da_legal
+    reasoning_load: very_high
+    language_probe: da_forcing
+    carries_correctness: true
+    prompt: |
+      En kommune træffer afgørelse om at standse en borgers sygedagpenge.
+      Borgeren blev ikke partshørt før afgørelsen, og afgørelsen indeholder ingen
+      begrundelse. Borgeren havde oplysninger, der kunne have ændret udfaldet.
+      Angiv hvilke to sagsbehandlingsregler kommunen har tilsidesat, og vurder
+      kort, om afgørelsen som udgangspunkt er ugyldig.
+    facit: |
+      (1) Partshøring (forvaltningslovens § 19) og (2) begrundelsespligten
+      (§§ 22-24) er tilsidesat. Begge er garantiforskrifter. Tilsidesættelse
+      skaber en formodning for ugyldighed, medmindre myndigheden konkret godtgør,
+      at fejlen ikke har haft betydning. Da borgeren havde oplysninger, der kunne
+      have ændret udfaldet, er partshøringsfejlen konkret væsentlig, og afgørelsen
+      er derfor som udgangspunkt ugyldig.
+
+  - id: P5
+    type: math
+    reasoning_load: high
+    language_probe: da_framed_neutral
+    carries_correctness: true
+    prompt: |
+      Et tog kører de første 120 km med 150 km/t og derefter de sidste 180 km med
+      90 km/t. Hvor mange minutter tager hele turen? Svar med ét tal i minutter.
+    facit: |
+      168 minutter. 120/150 = 0,8 t = 48 min; 180/90 = 2 t = 120 min;
+      i alt 168 min.
+
+  - id: P6
+    type: logic
+    reasoning_load: high
+    language_probe: da_framed_neutral
+    carries_correctness: true
+    prompt: |
+      Fire personer — Anna, Bo, Clara og David — kom ind på pladserne nr. 1 til 4
+      i et løb. David kom nummer 1. Anna kom før Bo. Clara kom lige efter Bo.
+      Angiv den fuldstændige rækkefølge fra nr. 1 til nr. 4.
+    facit: |
+      1. David, 2. Anna, 3. Bo, 4. Clara. (Entydig.)
+
+  - id: P7
+    type: code_structure
+    reasoning_load: medium
+    language_probe: da_framed_neutral
+    carries_correctness: true
+    prompt: |
+      Konvertér denne danske tekst til JSON efter skemaet
+      {navn: string, alder: number, by: string, abonnement: "basis" | "premium"}.
+      Returnér kun JSON, intet andet.
+      Tekst: "Mette Sørensen er 34 år, bor i Odense og har et premium-abonnement."
+    facit: |
+      {"navn":"Mette Sørensen","alder":34,"by":"Odense","abonnement":"premium"}
+
+  - id: P8
+    type: code_bug
+    reasoning_load: high
+    language_probe: da_framed_neutral
+    carries_correctness: true
+    prompt: |
+      Denne Python-funktion skal returnere det største tal i en liste, men den
+      indeholder en fejl. Find fejlen, forklar hvornår den slår fejl, og angiv den
+      rettede linje.
+
+      def find_største(tal):
+          største = 0
+          for t in tal:
+              if t > største:
+                  største = t
+          return største
+    facit: |
+      `største` initialiseres til 0. For en liste med kun negative tal returneres
+      derfor 0 i stedet for det største (mindst negative) tal. Rettelse:
+      initialisér `største = tal[0]` (og håndtér eventuelt tom liste særskilt).
+
+  - id: P9
+    type: da_open_analysis
+    reasoning_load: high
+    language_probe: da_open
+    carries_correctness: false
+    prompt: |
+      Vurdér fordele og ulemper ved, at en dansk kommune selv-hoster en åben
+      sprogmodel i stedet for at bruge et amerikansk API til at behandle
+      borgerhenvendelser. Giv en afvejet anbefaling.
+    facit: null
+
+  - id: P10
+    type: da_open_analysis
+    reasoning_load: high
+    language_probe: da_open
+    carries_correctness: false
+    prompt: |
+      En dansk mellemstor virksomhed har budget til ét af tre AI-initiativer:
+      (a) intern videnssøgning på tværs af dokumenter, (b) automatiske udkast til
+      kundesvar, (c) en dansk taleassistent til kundeservice. Hvilket bør de
+      prioritere, og hvorfor? Begrund din anbefaling.
+    facit: null

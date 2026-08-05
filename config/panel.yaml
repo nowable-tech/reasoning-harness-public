@@ -1,0 +1,162 @@
+# Model panel configuration.
+# trace_exposure is our EXPECTED classification per provider docs (June 2026).
+# The smoke test verifies this empirically and flags mismatches.
+#
+# openrouter_model_id: confirmed against live OpenRouter catalog 2026-06-25.
+# model_id: for the direct provider API (when direct key is present).
+# Verify both against provider docs before each production run.
+
+# Experiment-level constants — recorded on every result row.
+# reasoning_effort MUST be identical across all runs in a comparison set.
+# Changing it invalidates cross-model comparisons.
+experiment:
+  reasoning_effort: "high"   # OpenRouter reasoning.effort for applicable models
+
+models:
+  deepseek_v4:
+    provider: deepseek
+    role: scored
+    trace_exposure: raw
+    model_id: deepseek-reasoner                   # Direct DeepSeek API model ID (verify before run)
+    openrouter_model_id: deepseek/deepseek-v4-pro-20260423  # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+    base_url: https://api.deepseek.com
+
+  glm_5_2:
+    provider: zai
+    role: scored
+    trace_exposure: raw
+    model_id: glm-z1-air                          # Direct Z.ai API model ID (verify before run)
+    openrouter_model_id: z-ai/glm-5.2-20260616    # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+    base_url: https://open.bigmodel.cn/api/paas/v4/
+
+  kimi_k2_7:
+    provider: moonshot
+    role: scored
+    trace_exposure: raw
+    model_id: moonshot-v1-thinking                # Direct Moonshot API model ID (verify before run)
+    # kimi-k2.7-code is the K2.7 build available on OpenRouter (coding-focused).
+    # For general K2.7 reasoning, use the direct Moonshot API with MOONSHOT_API_KEY.
+    openrouter_model_id: moonshotai/kimi-k2.7-code-20260612  # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+    base_url: https://api.moonshot.cn/v1
+
+  gpt_5_5:
+    provider: openai
+    role: scored
+    trace_exposure: count_only
+    model_id: gpt-5.5                             # Direct OpenAI API model ID
+    openrouter_model_id: openai/gpt-5.5-20260423  # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+
+  claude_sonnet_4_6:
+    provider: anthropic
+    role: scored
+    trace_exposure: summarized
+    model_id: claude-sonnet-4-6                   # Direct Anthropic API model ID — undated alias, NOT used by --variance
+    openrouter_model_id: anthropic/claude-4.6-sonnet-20260217  # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+
+  gemma_4:
+    provider: gemma
+    role: anchor
+    trace_exposure: raw
+    model_id: google/gemma-4-31b-it               # OpenRouter model ID (Gemma 4 runs via OpenRouter)
+    openrouter_model_id: google/gemma-4-31b-it-20260402  # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+
+  opus_4_8:
+    provider: anthropic
+    role: scored
+    trace_exposure: summarized          # Claude exposes summarized CoT. Same constraint as claude_sonnet_4_6.
+    model_id: claude-opus-4-8            # Direct Anthropic API model ID — undated alias, NOT used by --variance
+    openrouter_model_id: anthropic/claude-4.8-opus-20260528  # PINNED 2026-07-08 (variance repro) — matches June exactly
+    thinking_budget: 16384
+
+  mistral_medium_3_5:
+    provider: mistral
+    role: scored
+    trace_exposure: raw                 # EXPECTED. Smoke test MUST confirm OpenRouter returns raw trace.
+                                        # If not: stop, correct trace_exposure, report before proceeding.
+    model_id: mistral-medium-3.5        # Confirmed OpenRouter 2026-06-26
+    openrouter_model_id: mistralai/mistral-medium-3.5-20260430  # PINNED 2026-07-08 (variance repro) — matches June exactly (dot, not hyphen — verified against June's recorded model_version)
+    thinking_budget: 16384
+
+  minimax:
+    provider: minimax
+    role: judge
+    trace_exposure: null                          # unused Phase 0
+    model_id: minimax-m3                          # Confirmed 2026-06-25: MiniMax M3 (latest)
+    openrouter_model_id: minimax/minimax-m3
+
+  gemini_3_1_pro:
+    provider: google
+    role: judge
+    trace_exposure: null                          # unused Phase 0
+    model_id: gemini-3.1-pro-preview              # Confirmed 2026-06-25: Gemini 3.1 Pro Preview
+    openrouter_model_id: google/gemini-3.1-pro-preview
+
+  # --- Added 2026-07-19 for --heavy on the three new models below. ---
+  # thinking_budget=16384 on these rows only (see docs/handover — the existing
+  # eight models' rows above are deliberately untouched; they still ran their
+  # historical results at 4096, and this addition does not retroactively change
+  # what was measured for them). reasoning_effort_sent is new: the panel's
+  # reasoning_effort (top of file) is no longer uniformly honored across every
+  # model — see per-row caveats below.
+
+  kimi_k3:
+    provider: moonshot
+    role: scored
+    trace_exposure: raw                           # EXPECTED, matches kimi_k2_7 family. Not pre-verified beyond preflight usage counts — smoke test / first --heavy row confirms actual raw-trace presence, same as every other row in this file.
+    model_id: kimi-k3-thinking                    # Direct Moonshot API model ID — UNVERIFIED GUESS, unused this run (MOONSHOT_API_KEY absent; verify before any direct-route run)
+    openrouter_model_id: moonshotai/kimi-k3-20260715  # PINNED 2026-07-19. Confirmed via 3 real completion calls, not catalog lookup (dated pins never appear in OpenRouter's /models listing — true for all 8 pre-existing pins too, so catalog absence is not evidence of anything). Call 1: HTTP 200. Call 2 (immediate retry): HTTP 429 "temporarily rate-limited upstream" — only a recognized model ID reaches the upstream rate limiter; unrecognized ones get instant 400. Call 3 (after the rate limit cleared): HTTP 200, request_model_id=moonshotai/kimi-k3-20260715, resp.model=moonshotai/kimi-k3, served_by=Moonshot AI, generation id=gen-1784480086-Ny5WCEM2KWzOAsxOUJV6 — logged directly, not inferred. Ruled out loose prefix-matching separately: -99999999, -20200101, -1, and -totally-bogus-xyz123 all returned clean 400 "not a valid model ID". Model is ~4 days old at pin time, so there is likely only one build — the pin protects future reproducibility, not today's run.
+    thinking_budget: 16384                        # K3 has always-on thinking. Moonshot's own known-limitations note: harnesses that truncate/alter the thinking trace cause significant quality degradation. Independent testers measured 13k+ reasoning tokens on SOME tasks — but that figure originates from an SVG-drawing (atypical generative) task, not code/finance — treat as an upper bound, not the expected median for this run's tasks.
+    reasoning_effort_sent: "high"                 # CAVEAT: "high" accepted with HTTP 200, same as "medium" and "max" (no error on any of the 3). But medium and max returned byte-identical usage (43 completion / 27 reasoning tokens, cost to 7 decimals) on one trivial-prompt probe each — we do NOT know what the effort parameter actually controls on K3, or whether "high" here is behaviorally equivalent to "high" on the other ten models. This is an open, unresolved comparison-validity question, not an assumption.
+    size_estimate: "50B active (16 of 896 experts/token), 2.8T total — KNOWN, community-article source, not an official model card. Re-confirm against the official card when weights ship 2026-07-27."
+
+  gpt_5_6_sol:
+    provider: openai
+    role: scored
+    trace_exposure: count_only                    # EXPECTED, matches gpt_5_5 family (OpenAI reasoning models on OpenRouter expose reasoning token counts only, no trace text)
+    model_id: gpt-5.6-sol                          # Direct OpenAI API model ID — UNVERIFIED GUESS, unused this run (OPENAI_API_KEY absent)
+    openrouter_model_id: openai/gpt-5.6-sol        # UNPINNED — no dated snapshot found. Tried 7 real completion calls with dated suffixes (20260701, 20260708, 20260715-20260719); all returned HTTP 400 "not a valid model ID". Using the undated slug. This row's numbers are NOT reproducible at the same pin-integrity level as the other ten rows in this file.
+    thinking_budget: 16384
+    reasoning_effort_sent: "high"                  # reasoning.mode is deliberately NOT set (defaults to non-pro). Do not set reasoning.mode="pro" — that routes to the separate openai/gpt-5.6-sol-pro slug, out of scope for this panel.
+    size_estimate: "unknown, ESTIMATED — no public data"
+
+  fable_5:
+    provider: anthropic
+    role: scored
+    trace_exposure: summarized                    # EXPECTED, matches claude_sonnet_4_6 / opus_4_8 (Claude exposes summarized CoT, same constraint)
+    model_id: claude-fable-5                       # Direct Anthropic API model ID — undated alias, NOT used by --variance, and NOT used by --heavy this run: ANTHROPIC_API_KEY is removed from the environment for the duration of the run (run_heavy already does this automatically for all Anthropic-provider rows — see run.py) to force the OpenRouter route, matching claude_sonnet_4_6 and opus_4_8's channel exactly instead of measuring fable_5 through a different path.
+    openrouter_model_id: anthropic/claude-fable-5  # UNPINNED — no dated snapshot found. Tried 7 real completion calls with dated suffixes (20260701, 20260708, 20260715-20260719); all returned HTTP 400 "not a valid model ID". Using the undated slug. This row's numbers are NOT reproducible at the same pin-integrity level as the other ten rows in this file.
+    thinking_budget: 16384
+    reasoning_effort_sent: "high"
+    size_estimate: "unknown, ESTIMATED — no public data"
+    data_retention_note: "Anthropic's policy does not permit zero-data-retention on this model. Tasks are neutral benchmark prompts, so this is likely unproblematic — noted per instruction, not treated as a blocker."
+
+  # --- Added 2026-07-19, fourth candidate, standalone --heavy run (not
+  # blended with kimi_k3/gpt_5_6_sol/fable_5's already-landed run). ---
+  inkling:
+    provider: thinkingmachines
+    role: scored
+    trace_exposure: raw                           # EXPECTED — preflight confirmed reasoning_tokens>0 AND raw reasoning TEXT in message.reasoning (richer than count_only: this model exposes actual CoT, not just a count). Re-confirm at first real --heavy row, same convention as every row in this file.
+    model_id: thinkingmachines/inkling             # No direct provider API exists for this model at all — third-party-hosted only, see served_by comment below. Same undated slug as openrouter_model_id's base, used here only because there is no separate direct-API identifier to distinguish it from.
+    openrouter_model_id: thinkingmachines/inkling-20260715  # PINNED 2026-07-19. Confirmed via 2 real completion calls (both 200, request_model_id logged, resp.model normalized to the undated slug as expected) + a sweep of 6 other dates (20260701-20260719 minus 0715) and 5 junk suffixes (-99999999, -totally-bogus-xyz123, -pro, -1, :free) — all 400 "not a valid model ID" — ruling out loose prefix-matching, same method as kimi_k3's pin. This is the model's release-day snapshot: there is very likely only one build in existence, so the pin protects nothing yet — its value is future reproducibility if/when a second build ships, not today's run.
+    thinking_budget: 16384
+    reasoning_effort_sent: "high"                 # Accepted alongside "medium"/"low" (200, no error on any). Unlike kimi_k3, NOT byte-identical across levels: high=48 reasoning tokens vs medium=17/low=20 on single trivial-prompt probes — "high" is clearly differentiated. No open comparison-validity concern here the way there is for K3.
+    size_estimate: "41B active (6 of 256 experts + 2 shared), 975B total — KNOWN, per Thinking Machines' own published spec (not a community estimate, unlike kimi_k3's)."
+    served_by_expected: "Together"                # Thinking Machines names FIVE hosting partners (Together, Fireworks, Modal, Databricks, Baseten). OpenRouter may route across more than one of them on future calls — this would reintroduce the exact backend-lottery risk this project has spent two days instrumenting against for other models (Gemma, DeepSeek, GLM, K2.7). served_by was "Together" on all 9 preflight probe calls (usage/effort/pin checks), but that is a preflight sample, not a guarantee. REPORT served_by IN EVERY DEBRIEF for this model, and flag explicitly if any row deviates from "Together" — do not silently pool across backends.
+
+  # --- Added 2026-07-27: Claude Opus 5, fourth version-jump entry (Opus 4.8 -> Opus 5). ---
+  claude_opus_5:
+    provider: anthropic
+    role: scored
+    trace_exposure: summarized                    # EXPECTED, matches claude_sonnet_4_6 / opus_4_8 / fable_5 (Claude exposes summarized CoT, same constraint). Preflight probe on a trivial prompt returned trace_status=absent (empty thinking text despite reasoning_tokens>0) — consistent with the register's noted Anthropic raw/summarized/absent mix (see §4.5); not treated as a regime reclassification off one sample.
+    model_id: claude-opus-5                       # Direct Anthropic API model ID — undated alias. No dated snapshot exists: direct API accepts this string verbatim (resp.model echoes it back unchanged), and OpenRouter's live catalog has no -YYYYMMDD variant either (see openrouter_model_id note). NOT used by the real run: ANTHROPIC_API_KEY is removed from the environment for both the light and heavy phases to force the OpenRouter route — fable_5's own full-phase data shows via_openrouter=true (not direct), so this matches fable_5's actual measured channel, not just its heavy phase.
+    openrouter_model_id: anthropic/claude-opus-5   # UNPINNED — no dated snapshot found. Queried OpenRouter's live /models catalog 2026-07-27: exactly two opus-5 slugs exist, anthropic/claude-opus-5 and anthropic/claude-opus-5-fast (2x price — a distinct product, not used here). No -YYYYMMDD suffix on either. Using the undated slug, same pin-integrity caveat as fable_5/gpt_5_6_sol.
+    thinking_budget: 16384
+    reasoning_effort_sent: "high"                  # Sent as the project default; NOT forwarded as a literal request param on this OpenRouter path (Claude-via-OpenRouter only takes thinking.budget_tokens, no effort string — same as opus_4_8/fable_5's channel). Preflight direct-API probe (thinking:adaptive + output_config.effort="high") also accepted "high" cleanly and confirmed the model's effort ladder honors "high" specifically (not just "max") — per instruction, held at "high" for comparability with the rest of the panel.
+    size_estimate: "unknown, ESTIMATED — no public data"
+    data_retention_note: "Anthropic's policy does not permit zero-data-retention on this model. Tasks are neutral benchmark prompts, so this is likely unproblematic — noted per instruction, not treated as a blocker."
