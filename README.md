@@ -255,4 +255,4 @@ FinQA's license before redistributing beyond benchmarking use).
 If you use this harness or its results, please cite:
 
 > Lars Harder / Nowable, "Reasoning-Economy Benchmark Harness" (2026).
-> https://github.com/TBD/reasoning-harness-public
+> https://github.com/nowable-tech/reasoning-harness-public
