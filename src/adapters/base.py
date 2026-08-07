@@ -167,6 +167,43 @@ def extract_warnings(resp) -> Optional[list]:
     return None
 
 
+def classify_provider_regime(resolved_model_id: Optional[str]) -> str:
+    """
+    Best-effort provider-family trace-exposure classification from a RESOLVED
+    model id (e.g. resp.model — the model that actually answered, not the
+    one requested). Used where the caller cannot assume a single fixed
+    panel.yaml trace_exposure ahead of time (a shared tool-calling loop
+    serving many adapters; a router call like openrouter/auto[-beta] whose
+    target is only known after the response comes back).
+
+    Returns "summarized" | "count_only" | "raw":
+      - "summarized": Anthropic's API never returns the raw CoT, only a
+        summary, regardless of how much reasoning text is present. A naive
+        "non-empty reasoning text => raw" check mislabels this — see
+        docs/reasoning_findings.md §4.5 (tool_loop.py used to do exactly
+        this for every Anthropic-family call routed through the shared
+        OpenAI-dialect tool loop).
+      - "count_only": OpenAI's reasoning-model family (o-series, GPT-5.x)
+        reports a reasoning token count but never reasoning text.
+      - "raw": everything else — open-weight models and, per direct
+        observation, Google Gemini — where "reasoning text present" already
+        correctly implies a genuine raw trace. This is the historical
+        default behavior and is unchanged for these providers.
+
+    None/empty input classifies as "raw" (preserves old behavior when the
+    resolved model id isn't available for some reason — better to fall back
+    to the presence-based heuristic than to silently mislabel as summarized).
+    """
+    if not resolved_model_id:
+        return "raw"
+    mid = resolved_model_id.lower()
+    if "anthropic" in mid or "claude" in mid:
+        return "summarized"
+    if "openai" in mid or mid.startswith("gpt-") or "/gpt-" in mid:
+        return "count_only"
+    return "raw"
+
+
 def assert_model_pin_honored(model_key: str, cfg: dict, request_model_id: str) -> None:
     """
     Hard stop — NOT a warning, NOT an AdapterError (which every run loop's

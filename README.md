@@ -235,6 +235,16 @@ per-model cost breakdown each phase prints at the end.
 
 ## Reproducing / extending
 
+- **Recompute headline figures from raw data**: `scripts/compute_findings.py
+  <results_dir>` reads a results tree (this repo's own `results/` if you've
+  run the harness yourself, or a data bundle someone shared with you in this
+  same row schema) and deterministically prints per-model reasoning medians
+  (light + heavy), reasoning share, correct/actual-$, tool grab-rate,
+  variance quartiles, and a `trace_status` inventory — applying every
+  convention above exactly. No API calls, no dependency on any curated or
+  hand-reviewed dataset. If a phase subdirectory (e.g. `tools/`, `variance/`)
+  is absent from the data you point it at, that section just reports no
+  data rather than failing.
 - **Add a model**: add a block to `config/panel.yaml` (provider, role,
   `trace_exposure`, model IDs, `thinking_budget`) and a matching block to
   `config/pricing.yaml`. If the provider isn't already in

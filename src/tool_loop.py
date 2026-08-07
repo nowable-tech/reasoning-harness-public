@@ -17,6 +17,7 @@ from typing import Optional
 from .adapters.base import (
     AdapterError,
     ModelResponse,
+    classify_provider_regime,
     estimate_tokens,
     extract_finish_reasons,
     extract_served_by,
@@ -24,6 +25,25 @@ from .adapters.base import (
     extract_warnings,
     split_token_estimate,
 )
+
+
+def _trace_status_for(regime: str, reasoning_text: Optional[str], reasoning_tokens: int) -> str:
+    """
+    Provider-aware trace_status. regime is classify_provider_regime()'s
+    output for the model that actually answered (resp.model), not a
+    presence-of-text guess — see that function's docstring for why this
+    matters (Anthropic returns non-empty SUMMARIZED text, which a naive
+    presence check used to mislabel "raw").
+    """
+    if regime == "summarized":
+        return "summarized" if reasoning_text else "absent"
+    if regime == "count_only":
+        return "count_only" if reasoning_tokens > 0 else "absent"
+    # regime == "raw": presence-based heuristic is correct here (open models,
+    # and Google Gemini per direct observation) — unchanged from before.
+    if reasoning_text:
+        return "raw"
+    return "count_only" if reasoning_tokens > 0 else "absent"
 from .tools import available_tool_defs, execute_tool, to_openai_tools
 
 # Substring match against the raw API error message — used to distinguish
@@ -169,7 +189,8 @@ def run_openai_tool_loop(
 
     if not tool_calls:
         latency = time.perf_counter() - t0
-        trace_status = "raw" if reasoning1 else ("count_only" if reas1 > 0 else "absent")
+        regime1 = classify_provider_regime(resp1.model)
+        trace_status = _trace_status_for(regime1, reasoning1, reas1)
         return ToolLoopResult(
             answer_text=answer1,
             reasoning_text=reasoning1,
@@ -263,7 +284,11 @@ def run_openai_tool_loop(
 
     combined_reasoning = "\n\n".join(t for t in (reasoning1, reasoning2) if t) or None
     reasoning_source = "api" if "api" in (src1, src2) else "text_estimate"
-    trace_status = "raw" if combined_reasoning else ("count_only" if (reas1 + reas2) > 0 else "absent")
+    # resp2.model is the model that produced the final answer (the forced
+    # no-tools continuation) — same underlying model as resp1 in practice,
+    # since this is one continuous conversation, not a re-route.
+    regime2 = classify_provider_regime(resp2.model)
+    trace_status = _trace_status_for(regime2, combined_reasoning, reas1 + reas2)
 
     return ToolLoopResult(
         answer_text=answer2,
