@@ -130,9 +130,9 @@ list.
     [MIT-licensed](https://github.com/openai/human-eval/blob/master/LICENSE);
     redistributed here under that license.
   - **finance_calc**, **finance_interp** — [FinQA](https://github.com/czyssrs/FinQA)
-    records `CDNS/2015/page_30.pdf-3` and `AMAT/2013/page_37.pdf-2`. See
-    FinQA's own repository for its license terms before redistributing or
-    building on this beyond benchmarking use.
+    (Chen et al., EMNLP 2021) records `CDNS/2015/page_30.pdf-3` and
+    `AMAT/2013/page_37.pdf-2`. FinQA is CC BY 4.0-licensed; redistributed
+    here under that license with attribution.
   - `finance_interp`'s facit encodes a documented correction: FinQA's own
     `qa.answer` string for that record is missing a trailing zero (a known
     dataset annotation issue), and the question is separately ambiguous
@@ -172,6 +172,15 @@ from the raw JSONL. Follow them exactly:
    numbers as an indicative spread across the panel, not as a
    statistically robust per-model estimate — do not compute variance or
    confidence intervals on n=1 data.
+5. **Closed-model reasoning-token counting.** Reasoning tokens are read from
+   the provider's own billed usage metadata where it reports one. Where the
+   API reports no count at all (Anthropic on some routes), the harness falls
+   back to a proportional estimate — reasoning share of the response, split
+   from the summarized thinking text length versus total output tokens. This
+   is never silent: every row persists which path produced its number as
+   `reasoning_source` (`"api"` or `"text_estimate"`). Check this field before
+   treating a closed-model reasoning-token figure as directly comparable to
+   an open-model one measured from real usage metadata.
 
 ## Caveats
 
@@ -249,8 +258,8 @@ per-model cost breakdown each phase prints at the end.
 Code and configuration in this repository are licensed under the [MIT
 License](LICENSE), © 2026 Lars Harder / Nowable — with the exception of
 the HumanEval task content (© OpenAI, MIT-licensed, redistributed under its
-own license) and the FinQA task content (© its original authors — verify
-FinQA's license before redistributing beyond benchmarking use).
+own license) and the FinQA task content (© Chen et al., EMNLP 2021,
+CC BY 4.0-licensed, redistributed under its own license).
 
 If you use this harness or its results, please cite:
 
