@@ -14,12 +14,16 @@ Built for the Nowable essay series on the economics of LLM reasoning
   Opus 5, Claude Fable 5, Mistral Medium 3.5, Inkling) plus 1 anchor model
   (Gemma 4) used as a stable low-cost reference point across runs. See
   `config/panel.yaml`.
-- **16 tasks**: 10 Danish light-suite prompts (P1–P10, one pass each), 3
+- **13-task set**: 10 Danish light-suite prompts (P1–P10, one pass each) + 3
   heavy tasks (H1–H3: code, finance-calculation, finance-interpretation, run
-  at 5 passes per condition), and a 6-task multilingual supplement (M1–M6,
-  Danish/English/Chinese) used for a separate language-cost experiment —
-  three of which (M2/M3/M5) reuse light-suite content in translation for a
-  controlled comparison. See [Task set](#task-set).
+  at 5 passes per condition) — this is the set every scored model runs in
+  the main evaluation. A separate 6-task multilingual supplement (M1–M6,
+  Danish/English/Chinese) adds language *options* for an independent
+  language-cost experiment: three of the six (M2/M3/M5) are the same
+  content as three of the light-suite prompts above, just in translation,
+  not new tasks. Counting every distinct task-content across both sets
+  gives 16 — that figure describes content variants, not the size of the
+  main 13-task evaluation. See [Task set](#task-set).
 - **Tools / no-tools**: every scored model runs both a plain baseline and a
   tool-offload condition (`python_exec` sandbox always available,
   `web_search` if `SEARCH_API_KEY` is set), to measure whether reasoning
@@ -150,16 +154,29 @@ list.
 These are load-bearing and easy to get subtly wrong when re-deriving results
 from the raw JSONL. Follow them exactly:
 
-1. **Heavy numbers = median of per-task medians, baseline condition.**
-   When you see a single reported heavy-suite number for a model, it is the
-   median across that model's three tasks' own per-task medians (each task's
-   median taken across its repeated passes), not a median across every raw
-   row pooled together.
+1. **Heavy numbers = median of per-task medians, baseline condition; light
+   numbers = a single flat median — the two suites are NOT aggregated the
+   same way.** Heavy: when you see a single reported heavy-suite number for
+   a model, it is the median across that model's three tasks' own per-task
+   medians (each task's median taken across its repeated passes), not a
+   median across every raw row pooled together. Light: there is no
+   task-grouping to nest within, so a single reported light-suite number is
+   the flat median across that model's prompt-level rows directly — 10 rows
+   (one pass each) in the main suite, 20 rows (10 prompts × 2 passes) in
+   `--variance`. Applying the heavy suite's two-stage median to light data
+   (or vice versa) will silently produce a different, wrong number.
 2. **Pass-level dedup: the latest run wins per cell.** If a task/model/
    condition cell was re-run (e.g. a recap correcting a truncation or
    token-cap artifact), the later run's rows replace the earlier run's rows
    for that exact cell — never pool both.
-3. **Efficiency = correct answers / actual summed `cost_usd`, never
+3. **Three run-modes, not two.** `--full` (light suite, 1 pass per prompt),
+   `--heavy` (5 passes per cell), and `--variance` — a dedicated repro run,
+   separate from both: 2 passes on the full 10-prompt light suite (baseline
+   only) plus 5 passes on the heavy suite's cells, run independently of the
+   main `--full`/`--heavy` runs. Variance-suite rows are not the same rows
+   as the main light/heavy runs and should not be silently pooled with
+   them — see `run.py`'s `run_variance()`.
+4. **Efficiency = correct answers / actual summed `cost_usd`, never
    median-cost × row-count.** Cost distributions are right-skewed: a
    handful of expensive outlier rows pull the true total well above what
    `median × n` predicts. This was confirmed empirically on
@@ -167,12 +184,12 @@ from the raw JSONL. Follow them exactly:
    an actual $0.84 — a 34% error. See `src/metrics.py::correct_per_dollar`,
    the single source of truth for this metric — use it rather than
    re-deriving the ratio inline.
-4. **Light-suite numbers are n=1.** Each light prompt runs once per model
-   (unless you're specifically running `--variance`). Read light-suite
-   numbers as an indicative spread across the panel, not as a
-   statistically robust per-model estimate — do not compute variance or
-   confidence intervals on n=1 data.
-5. **Closed-model reasoning-token counting.** Reasoning tokens are read from
+5. **Light-suite numbers are n=1.** Each light prompt runs once per model
+   in the main `--full` suite (see convention 3 above for `--variance`'s 2
+   passes). Read main-suite light numbers as an indicative spread across
+   the panel, not as a statistically robust per-model estimate — do not
+   compute variance or confidence intervals on n=1 data.
+6. **Closed-model reasoning-token counting.** Reasoning tokens are read from
    the provider's own billed usage metadata where it reports one. Where the
    API reports no count at all (Anthropic on some routes), the harness falls
    back to a proportional estimate — reasoning share of the response, split
