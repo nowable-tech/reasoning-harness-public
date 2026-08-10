@@ -27,7 +27,9 @@ source of truth this script implements):
   - Pass-level dedup: latest run wins per exact cell. "Cell" = (model, domain,
     condition, pass_index) for heavy/tools3/variance; (model, prompt_id[,
     arm]) for full/tools. "Latest" = highest run_id (sortable — run_ids are
-    UTC timestamps: YYYYMMDDTHHMMSS_suffix).
+    UTC timestamps: YYYYMMDDTHHMMSS_suffix). On an exact run_id tie (e.g. a
+    regrading pass over the same run), the row from a *_corrected/*_recap
+    source file wins over the plain original — see _dedup_priority().
   - Heavy headline numbers (reasoning medians, reasoning share) = median of
     per-task medians, BASELINE condition only. Each task's own median is
     taken across its (deduped) repeated passes first; the reported number is
@@ -66,20 +68,45 @@ def _load_jsonl_dir(root: Path, subdir: str) -> list[dict]:
             for line in fh:
                 line = line.strip()
                 if line:
-                    rows.append(json.loads(line))
+                    row = json.loads(line)
+                    row["_source_file"] = f.name
+                    rows.append(row)
     return rows
 
 
+# Filename markers for a row that supersedes a same-run_id sibling — e.g. a
+# regrading pass over the same run (*_corrected.jsonl) or a full re-run that
+# reused the original run_id (*_recap.jsonl). Declared explicitly so dedup on
+# an exact run_id tie does not depend on glob() sort order / dict-insertion
+# order, which happened to pick the right file by coincidence (alphabetical
+# sort puts "_heavy.jsonl" before "_heavy_corrected.jsonl") but was never a
+# rule — a differently-named correction file could silently flip the result.
+_CORRECTION_MARKERS = ("_corrected", "_recap")
+
+
+def _dedup_priority(row: dict) -> tuple:
+    """Sort key for _dedup: (run_id, is_correction). run_id is the primary,
+    always-decisive signal (higher wins). is_correction only breaks a TRUE
+    tie on an identical run_id, preferring a *_corrected/*_recap source file
+    over the plain original."""
+    run_id = row.get("run_id", "")
+    source = row.get("_source_file", "")
+    is_correction = any(marker in source for marker in _CORRECTION_MARKERS)
+    return (run_id, is_correction)
+
+
 def _dedup(rows: list[dict], key_fn) -> list[dict]:
-    """Latest run_id wins per key_fn(row). run_id is a sortable UTC timestamp
-    prefix (YYYYMMDDTHHMMSS_...), so string comparison is correct."""
+    """Latest run_id wins per key_fn(row); on an exact run_id tie, the row
+    from a *_corrected/*_recap source file wins over the plain original
+    (see _dedup_priority). run_id is a sortable UTC timestamp prefix
+    (YYYYMMDDTHHMMSS_suffix), so string comparison is correct."""
     best: dict[tuple, dict] = {}
     for r in rows:
         k = key_fn(r)
         cur = best.get(k)
-        if cur is None or r.get("run_id", "") >= cur.get("run_id", ""):
+        if cur is None or _dedup_priority(r) >= _dedup_priority(cur):
             best[k] = r
-    return list(best.values())
+    return [{k: v for k, v in r.items() if k != "_source_file"} for r in best.values()]
 
 
 def _median(values: list[float]) -> Optional[float]:
