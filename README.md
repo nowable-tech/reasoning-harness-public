@@ -228,17 +228,16 @@ from the raw JSONL. Follow them exactly:
   per-row comments in `config/panel.yaml` — they document exactly how each
   pin was confirmed (or why it couldn't be).
 
-## Cost warning
+## Cost 
 
-**A full panel run costs real money.** Concrete measured data points from
+**A full panel comes with a cost.** Concrete measured data points from
 single-addition runs on this panel (light + heavy phases, ~40–80 calls):
 roughly **$0.10–$1.10** per run, depending on which models were included
 (premium models like Opus/Fable/GPT-5.6-Sol cost substantially more per call
 than the open-weight models). A full run across the entire 12+1-model panel
 and every phase (`--full`, `--heavy`, `--variance`, `--tools`, `--langcost`)
 multiplies that by roughly 13 models and several passes each — budget on the
-order of **tens of dollars**, not cents, before running everything
-unattended.
+order of **tens of dollars**.
 
 `run.py`'s own phases (`--full`, `--heavy`, `--variance`, `--tools`) have
 **no built-in spend cap** — they print a running cost total only at the end.
