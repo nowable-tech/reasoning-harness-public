@@ -3,8 +3,8 @@
 Post-hoc analysis over full-run JSONL records.
 
 Usage:
-    python3 analyse.py                          # uses most-recent results/full/*.jsonl
-    python3 analyse.py --run-id 20260625T181036_full
+    python3 analysis.py                          # uses most-recent results/full/*.jsonl
+    python3 analysis.py --run-id 20260625T181036_full
 
 Outputs two re-cut aggregates — no new model calls:
   A) Language matrix (raw models only as findings; claude/gpt explicitly excluded)

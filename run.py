@@ -2041,12 +2041,12 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
     Read a completed langcost full-run JSONL and write results/syntese/sprogets_pris_data.md.
 
     Computes:
-      1. Sprog-tax i tokens (avg + median per model × lang, avg-based ratios)
-      2. Sprog-tax i tegn  (avg + median per model × lang, avg-based ratios)
-      3. Outlier-robusthed (two runs that skew the averages, with corrected ratios)
-      4. Dekomponering: tegn per token — encoding tax vs genuine extra thinking
-      5. Krydstabel per model + pooled summary
-      6. Pris per sprog per model
+      1. Language tax in tokens (avg + median per model × lang, avg-based ratios)
+      2. Language tax in characters (avg + median per model × lang, avg-based ratios)
+      3. Outlier robustness (two runs that skew the averages, with corrected ratios)
+      4. Decomposition: characters per token — encoding tax vs genuine extra thinking
+      5. Cross-table per model + pooled summary
+      6. Price per language per model
     """
     import json
     import statistics
@@ -2104,33 +2104,33 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
     # ─── Build markdown ───
     L: list[str] = []
 
-    L.append("# Sprogets pris — data-note")
+    L.append("# The Price of Language — data note")
     L.append("")
     L.append(
-        "> **Forbehold:** Resultaterne er betinget af oversættelsernes troskab, "
-        "særligt de kinesiske (zh) varianter. De kinesiske prompts er maskinoversat "
-        "med engelsk som pivot-sprog og er ikke verificeret af en kyndig taler. "
-        "Alle konklusioner fra zh-sessioner er indikative, ikke endelige, "
-        "indtil oversættelserne er efterprøvet. "
-        "Derudover endte 14 af de 30 kinesiske kald med at tænke på engelsk, "
-        "så zh-kolonnen blander ægte kinesisk tænkning med tilbagefald, "
-        "og zh-tallene er kun indikative."
+        "> **Caveat:** Results are conditional on translation fidelity, "
+        "particularly the Chinese (zh) variants. The Chinese prompts are "
+        "machine-translated with English as the pivot language and have not "
+        "been verified by a competent speaker. All conclusions from zh "
+        "sessions are indicative, not final, until the translations have "
+        "been checked. Additionally, 14 of the 30 Chinese calls ended up "
+        "thinking in English, so the zh column mixes genuine Chinese "
+        "thinking with fallback, and the zh figures are indicative only."
     )
     L.append("")
-    L.append(f"**Kilde:** `{source_run_id}.jsonl` — {len(rows)} records")
-    L.append(f"**Modeller:** {', '.join(LANGCOST_MODELS)}")
-    L.append(f"**Sprog:** {', '.join(LANGCOST_LANGS)}")
-    L.append(f"**Opgaver:** M1–M6 (6 kultur-neutrale opgaver)")
-    L.append(f"**thinking_budget:** {LANGCOST_THINKING_BUDGET} (generøst og ens for alle modeller)")
+    L.append(f"**Source:** `{source_run_id}.jsonl` — {len(rows)} records")
+    L.append(f"**Models:** {', '.join(LANGCOST_MODELS)}")
+    L.append(f"**Languages:** {', '.join(LANGCOST_LANGS)}")
+    L.append(f"**Tasks:** M1–M6 (6 culture-neutral tasks)")
+    L.append(f"**thinking_budget:** {LANGCOST_THINKING_BUDGET} (generous and equal across all models)")
     L.append("")
 
-    # ─── 1. Sprog-tax i tokens ───
-    L.append("## 1. Sprog-tax i tokens (reasoning_tokens)")
+    # ─── 1. Language tax in tokens ───
+    L.append("## 1. Language tax in tokens (reasoning_tokens)")
     L.append("")
     L.append(
-        "Gennemsnit og median per model og sprog over de 6 opgaver. "
-        "Medianen er robust mod enkeltstående outlier-kørsler. "
-        "da/en og zh/en er gennemsnitsbaserede forhold: >1 = det sprog bruger flere tokens end engelsk."
+        "Average and median per model and language across the 6 tasks. "
+        "The median is robust to single outlier runs. "
+        "da/en and zh/en are average-based ratios: >1 = that language uses more tokens than English."
     )
     L.append("")
     L.append("| Model | da avg | da med | en avg | en med | zh avg | zh med | da/en | zh/en |")
@@ -2154,12 +2154,12 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
         )
     L.append("")
 
-    # ─── 2. Sprog-tax i tegn ───
-    L.append("## 2. Sprog-tax i tegn (reasoning_chars)")
+    # ─── 2. Language tax in characters ───
+    L.append("## 2. Language tax in characters (reasoning_chars)")
     L.append("")
     L.append(
-        "Gennemsnit og median for antal tegn i det rå trace-tekst. "
-        "Tegn er et tokenizer-uafhængigt mål: en stigning her er ægte ekstra tekst, ikke blot kodning."
+        "Average and median character count of the raw trace text. "
+        "Characters are a tokenizer-independent measure: an increase here is genuine extra text, not just encoding."
     )
     L.append("")
     L.append("| Model | da avg | da med | en avg | en med | zh avg | zh med | da/en | zh/en |")
@@ -2183,13 +2183,13 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
         )
     L.append("")
 
-    # ─── 3. Outlier-robusthed ───
-    L.append("## 3. Outlier-robusthed")
+    # ─── 3. Outlier robustness ───
+    L.append("## 3. Outlier robustness")
     L.append("")
     L.append(
-        "To enkeltkørsler er markant atypiske og forvrider gennemsnitstallene i tabel 1 og 2. "
-        "Median-kolonnerne ovenfor er immune, men forholdene (da/en, zh/en) er gennemsnitsbaserede "
-        "og påvirkes."
+        "Two single runs are markedly atypical and distort the average figures in tables 1 and 2. "
+        "The median columns above are immune, but the ratios (da/en, zh/en) are average-based "
+        "and are affected."
     )
     L.append("")
 
@@ -2224,40 +2224,40 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
 
     L.append("**Outlier 1 — mistral_medium_3_5, M1, lang=en:**")
     L.append(
-        f"13 606 reasoning-tokens og 48 814 tegn — ca. 10× mere end Mistrals "
-        f"typiske engelske kørsel (median: 1 444 tokens). "
-        f"Denne ene kørsel puster Mistrals en-gennemsnit op fra 2 160 til 4 068 tokens "
-        f"og trækker en/da-forholdet fra "
-        f"{'~' + f'{mis_ratio_no_m1:.1f}' if mis_ratio_no_m1 else '?'} til "
-        f"{'~' + f'{mis_ratio_all:.1f}' if mis_ratio_all else '?'} (M1 fratrukket begge sider). "
-        f"**Retningen holder dog på alle seks opgaver:** Mistral bruger konsekvent "
-        f"flere tokens på engelsk end på dansk, uanset om M1 medregnes eller ej."
+        f"13,606 reasoning tokens and 48,814 characters — roughly 10× more than "
+        f"Mistral's typical English run (median: 1,444 tokens). "
+        f"This single run inflates Mistral's en average from 2,160 to 4,068 tokens "
+        f"and pulls the en/da ratio from "
+        f"{'~' + f'{mis_ratio_no_m1:.1f}' if mis_ratio_no_m1 else '?'} to "
+        f"{'~' + f'{mis_ratio_all:.1f}' if mis_ratio_all else '?'} (M1 excluded on both sides). "
+        f"**The direction holds across all six tasks, though:** Mistral consistently "
+        f"uses more tokens in English than in Danish, whether or not M1 is included."
     )
     L.append("")
     L.append("**Outlier 2 — deepseek_v4, M6, lang=zh:**")
     L.append(
-        f"7 137 reasoning-tokens og 9 357 tegn — "
-        f"ca. 20× mere end DeepSeeks typiske kinesiske kørsel (median: 344 tokens). "
-        f"Denne ene kørsel driver næsten hele zh/en-forholdet: "
-        f"{'~' + f'{ds_ratio_all:.2f}' if ds_ratio_all else '?'} med M6, men "
-        f"{'~' + f'{ds_ratio_no_m6:.2f}' if ds_ratio_no_m6 else '?'} uden "
-        f"(M6 fratrukket begge sider). "
-        f"DeepSeeks kinesiske zh/en-forhold på 4,56 bør ikke tolkes som et generelt mønster."
+        f"7,137 reasoning tokens and 9,357 characters — "
+        f"roughly 20× more than DeepSeek's typical Chinese run (median: 344 tokens). "
+        f"This single run drives almost the entire zh/en ratio: "
+        f"{'~' + f'{ds_ratio_all:.2f}' if ds_ratio_all else '?'} with M6, but "
+        f"{'~' + f'{ds_ratio_no_m6:.2f}' if ds_ratio_no_m6 else '?'} without "
+        f"(M6 excluded on both sides). "
+        f"DeepSeek's Chinese zh/en ratio of 4.56 should not be read as a general pattern."
     )
     L.append("")
 
-    # ─── 4. Dekomponering ───
-    L.append("## 4. Dekomponering: tegn per reasoning-token")
+    # ─── 4. Decomposition ───
+    L.append("## 4. Decomposition: characters per reasoning token")
     L.append("")
     L.append(
-        "Hvis **tokens stiger** men **tegn ikke gør** (tegn/token-forholdet falder), "
-        "er det en ren **kodningsskat** — det samme indhold kræver flere tokens at "
-        "repræsentere på det pågældende sprog. "
-        "Hvis **både tokens og tegn stiger** (forholdet er stabilt), er det "
-        "**ægte ekstra tænkning** — modellen ræsonnerer faktisk mere."
+        "If **tokens increase** but **characters don't** (the char/token ratio falls), "
+        "that's a pure **encoding tax** — the same content requires more tokens to "
+        "represent in that language. "
+        "If **both tokens and characters increase** (the ratio is stable), that's "
+        "**genuine extra thinking** — the model is actually reasoning more."
     )
     L.append("")
-    L.append("| Model | da tg/tok | en tg/tok | zh tg/tok | Konklusion (da vs en) |")
+    L.append("| Model | da chars/tok | en chars/tok | zh chars/tok | Conclusion (da vs en) |")
     L.append("|---|---:|---:|---:|---|")
     for key in LANGCOST_MODELS:
         tok = {
@@ -2277,15 +2277,15 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
             tok_ratio = tok["da"] / tok["en"]
             chr_ratio = chrs["da"] / chrs["en"]
             if tok_ratio > 1.05 and chr_ratio < 1.05:
-                conclusion = "Kodningsskat (tok↑, tegn≈)"
+                conclusion = "Encoding tax (tok↑, chars≈)"
             elif tok_ratio > 1.05 and chr_ratio > 1.05:
-                conclusion = "Ægte ekstra tænkning (tok↑ og tegn↑)"
+                conclusion = "Genuine extra thinking (tok↑ and chars↑)"
             elif tok_ratio < 0.95:
-                conclusion = "da billigere end en"
+                conclusion = "da cheaper than en"
             else:
-                conclusion = "Ingen klar forskel"
+                conclusion = "No clear difference"
         else:
-            conclusion = "Utilstrækkeligt data"
+            conclusion = "Insufficient data"
 
         L.append(
             f"| {key} "
@@ -2294,22 +2294,23 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
         )
     L.append("")
     L.append(
-        "_Note: Kinesisk bruger typisk 1,5–3 tegn per token (effektiv tokenisering af "
-        "unicode-tegn), mod 3–6 tegn per token for latin-baserede sprog. "
-        "En lav zh tg/tok kan afspejle tokenizerens effektivitet, ikke kortere tænkning._"
+        "_Note: Chinese typically uses 1.5–3 characters per token (efficient "
+        "tokenization of unicode characters), versus 3–6 characters per token for "
+        "Latin-based languages. A low zh chars/token can reflect tokenizer "
+        "efficiency, not shorter thinking._"
     )
     L.append("")
 
-    # ─── 5. Krydstabel per model + poolet total ───
-    L.append("## 5. Krydstabel: prompt_lang × primary_trace_language")
+    # ─── 5. Cross-table per model + pooled total ───
+    L.append("## 5. Cross-table: prompt_lang × primary_trace_language")
     L.append("")
     L.append(
-        "Substrat-kontrollen: får dansk prompt modellen til at tænke på dansk, "
-        "eller falder den tilbage på engelsk? Her vises mønstret per model "
-        "(n=6 per celle — ét kald per opgave), så modelspecifik adfærd er synlig."
+        "The substrate control: does a Danish prompt make the model think in "
+        "Danish, or does it fall back to English? Shown here per model "
+        "(n=6 per cell — one call per task), so model-specific behavior is visible."
     )
     L.append("")
-    L.append("| Model | da→ (6 kald) | en→ (6 kald) | zh→ (6 kald) |")
+    L.append("| Model | da→ (6 calls) | en→ (6 calls) | zh→ (6 calls) |")
     L.append("|---|---|---|---|")
 
     pooled: dict[str, Counter] = {lang: Counter() for lang in LANGCOST_LANGS}
@@ -2330,7 +2331,7 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
         L.append(f"| {key} | {cells[0]} | {cells[1]} | {cells[2]} |")
 
     L.append("")
-    L.append("**Poolet total (alle modeller, alle 6 opgaver, n=30 per sprog):**")
+    L.append("**Pooled total (all models, all 6 tasks, n=30 per language):**")
     pool_parts = []
     for pl in LANGCOST_LANGS:
         total = sum(pooled[pl].values())
@@ -2343,10 +2344,10 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
     L.append("  \n".join(pool_parts))
     L.append("")
 
-    # ─── 6. Pris per sprog per model ───
-    L.append("## 6. Pris per sprog per model (USD)")
+    # ─── 6. Price per language per model ───
+    L.append("## 6. Price per language per model (USD)")
     L.append("")
-    L.append("Samlet pris over alle 6 opgaver, fordelt på sprog og model.")
+    L.append("Total price across all 6 tasks, broken down by language and model.")
     L.append("")
     L.append("| Model | da | en | zh | Total |")
     L.append("|---|---:|---:|---:|---:|")
@@ -2376,7 +2377,7 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
     # ─── Footer ───
     L.append("---")
     L.append("")
-    L.append(f"*Auto-genereret af `run.py --langcost-report`. Kilde: `{source_run_id}`.*")
+    L.append(f"*Auto-generated by `run.py --langcost-report`. Source: `{source_run_id}`.*")
 
     syntese_dir.mkdir(parents=True, exist_ok=True)
     report_path = syntese_dir / "sprogets_pris_data.md"
