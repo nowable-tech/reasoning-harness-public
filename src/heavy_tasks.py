@@ -55,6 +55,19 @@ FINANCE_INSTRUCTION = (
     "final numeric answer clearly, e.g. \"Final answer: X\"."
 )
 
+# Single source of truth for the tool-offload invitation appended to a
+# heavy-task prompt under the invited_auto / --tools3 condition. Previously
+# duplicated verbatim in run.py (as TOOLS3_INVITATION / HEAVY_INVITATION),
+# run_auto_router.py, and run_opus5_panel.py — consolidated here 2026-08-11,
+# import from here rather than re-defining. See the module docstring's
+# EXPERIMENTAL CONTENT note: do not translate or edit this string; reported
+# grab-rate figures rest on this exact wording.
+HEAVY_INVITATION = (
+    "\n\nDu har adgang til to værktøjer: python_exec (kør Python for eksakt "
+    "beregning) og web_search (slå fakta op). Brug dem hvis de hjælper med at "
+    "svare korrekt."
+)
+
 
 def _download(url: str, dest: Path) -> Path:
     if dest.exists():

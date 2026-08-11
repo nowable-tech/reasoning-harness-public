@@ -66,7 +66,7 @@ from src.adapters.base import (
 from src.config_loader import load_pricing, load_prompts
 from src.grader import PROGRAMMATIC_PROMPTS, grade_programmatic
 from src.heavy_grader import grade as grade_heavy
-from src.heavy_tasks import TASK_KEYS, load_heavy_tasks
+from src.heavy_tasks import TASK_KEYS, HEAVY_INVITATION, load_heavy_tasks
 from src.storage import save_heavy_result
 from src.tool_loop import ToolsNotSupportedError
 
@@ -79,17 +79,10 @@ RESULTS_DIR = Path(__file__).parent / "results" / "auto"
 
 HEAVY_CONDITIONS: tuple[str, ...] = ("baseline", "invited_auto")
 
-# Verbatim from run.py's TOOLS3_INVITATION / HEAVY_INVITATION — same source,
+# HEAVY_INVITATION is imported from src.heavy_tasks above — same source,
 # unchanged, per the brief's "samme prompts, uændrede" requirement.
-#
-# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. See run.py's
-# TOOLS3_INVITATION for the freeze note; grab-rate figures rest on this
-# exact wording.
-HEAVY_INVITATION = (
-    "\n\nDu har adgang til to værktøjer: python_exec (kør Python for eksakt "
-    "beregning) og web_search (slå fakta op). Brug dem hvis de hjælper med at "
-    "svare korrekt."
-)
+# Previously a verbatim duplicate defined locally here; consolidated
+# 2026-08-11.
 
 LIGHT_PROMPT_IDS = [f"P{i}" for i in range(1, 11)]
 

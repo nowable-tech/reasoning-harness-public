@@ -48,6 +48,7 @@ from src.config_loader import load_panel, load_prompts
 from src.cost import compute_cost
 from src.heavy_grader import grade as grade_heavy
 from src.heavy_tasks import TASK_KEYS as HEAVY_TASK_KEYS
+from src.heavy_tasks import HEAVY_INVITATION
 from src.heavy_tasks import load_heavy_tasks
 from src.language_metric import measure_trace_language
 from src.model_resolver import assert_no_silent_direct_route, print_resolution_table, resolve_models
@@ -64,17 +65,9 @@ PRICE_CAP_USD = 5.0
 
 RESULTS_DIR = Path(__file__).parent / "results"
 
-# Verbatim from run.py's TOOLS3_INVITATION / HEAVY_INVITATION — same source,
-# unchanged.
-#
-# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. See run.py's
-# TOOLS3_INVITATION for the freeze note; grab-rate figures rest on this
-# exact wording.
-HEAVY_INVITATION = (
-    "\n\nDu har adgang til to værktøjer: python_exec (kør Python for eksakt "
-    "beregning) og web_search (slå fakta op). Brug dem hvis de hjælper med at "
-    "svare korrekt."
-)
+# HEAVY_INVITATION is imported from src.heavy_tasks above — same source,
+# unchanged. Previously a verbatim duplicate defined locally here;
+# consolidated 2026-08-11.
 
 
 def _tool_names_used(response) -> tuple[str, ...]:

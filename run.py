@@ -35,6 +35,7 @@ from src.judge import (
     compute_agreement,
 )
 from src.heavy_grader import grade as grade_heavy
+from src.heavy_tasks import HEAVY_INVITATION
 from src.heavy_tasks import TASK_KEYS as HEAVY_TASK_KEYS
 from src.heavy_tasks import load_heavy_tasks
 from src.language_metric import measure_trace_language
@@ -3033,17 +3034,11 @@ TOOLS3_TOOL_RELEVANT_PROMPTS: dict[str, str] = {
 }
 TOOLS3_CONTROL_GROUP: set[str] = {"P1", "P2", "P9", "P10"}
 
-# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. This is the literal tool
-# invitation text sent to the model for --tools3 and --heavy's invited_auto
-# condition. Reported grab-rate figures rest on this exact wording; any
-# change invalidates comparability with existing runs. Duplicated verbatim
-# in run_auto_router.py and run_opus5_panel.py (import from here instead of
-# re-defining — see those files).
-TOOLS3_INVITATION = (
-    "\n\nDu har adgang til to værktøjer: python_exec (kør Python for eksakt "
-    "beregning) og web_search (slå fakta op). Brug dem hvis de hjælper med at "
-    "svare korrekt."
-)
+# TOOLS3_INVITATION is this phase's name for src.heavy_tasks.HEAVY_INVITATION
+# — same frozen experimental content, single source of truth there now
+# (previously duplicated verbatim here, in run_auto_router.py, and in
+# run_opus5_panel.py).
+TOOLS3_INVITATION = HEAVY_INVITATION
 
 # Baseline is REUSED, not re-run — same pinned-version pooling rule as --variance:
 # exact model_version match to panel.yaml's openrouter_model_id, reasoning_source=="api".
@@ -3458,9 +3453,9 @@ def run_tools3(repeats: int = 5, allow_direct: bool = False) -> int:
 HEAVY_MODELS: list[str] = FULL_MODEL_ORDER
 HEAVY_CONDITIONS: tuple[str, ...] = ("baseline", "invited_auto")
 
-# Reuse the --tools3 invitation verbatim — "fælles invitationslinje identisk
-# for alle" was already satisfied by that constant; no reason to re-derive it.
-HEAVY_INVITATION = TOOLS3_INVITATION
+# HEAVY_INVITATION is imported directly from src.heavy_tasks above (same
+# object TOOLS3_INVITATION aliases) — --heavy and --tools3 share the exact
+# same invitation text by design, nothing to re-derive here.
 
 
 def run_heavy(repeats: int = 5, allow_direct: bool = False) -> int:
