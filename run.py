@@ -2009,8 +2009,8 @@ def run_langcost(full: bool = False, steer: bool = False, allow_direct: bool = F
         # Crosstable: prompt_lang × primary_trace_language
         from collections import Counter
         print(f"\n{'═'*80}")
-        print(f"  AGGREGATE 3 — Krydstabel: prompt_lang × primary_trace_language")
-        print(f"  (pooled over alle modeller og alle {len(all_task_ids)} opgaver)")
+        print(f"  AGGREGATE 3 — Cross-table: prompt_lang × primary_trace_language")
+        print(f"  (pooled over all models and all {len(all_task_ids)} tasks)")
         print(f"{'═'*80}")
         for pl in LANGCOST_LANGS:
             trace_langs = [r["primary_trace_lang"] or "?" for r in agg if r["lang"] == pl]
