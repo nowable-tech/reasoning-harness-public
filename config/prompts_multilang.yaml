@@ -12,14 +12,14 @@
 # closely as possible. English variable names in the code tasks (M4, M5)
 # keep the code itself language-free.
 #
-# facit is the blind answer used for correctness checking (M2, M3, M4, M5).
-# facit is NEVER sent to the models — load_multilang_prompts() strips it.
-# Runtime assert: "facit not in request-path object" (mirrors prompts.yaml's pattern).
+# answer_key is the blind answer used for correctness checking (M2, M3, M4, M5).
+# answer_key is NEVER sent to the models — load_multilang_prompts() strips it.
+# Runtime assert: "answer_key not in request-path object" (mirrors prompts.yaml's pattern).
 
 meta:
   phase: langcost
   send_fields: [variants.da, variants.en, variants.zh]
-  blind_field: facit
+  blind_field: answer_key
 
 prompts:
 
@@ -37,7 +37,7 @@ prompts:
       zh: |
         请简要解释什么是校验和（checksum），以及校验和为什么用于验证数据完整性。
         请尽量简短作答。
-    facit: null
+    answer_key: null
 
   - id: M2
     type: math
@@ -55,7 +55,7 @@ prompts:
       zh: |
         一列火车先以150千米每小时的速度行驶120千米，然后以90千米每小时的速度行驶
         180千米。整段旅程需要多少分钟？请只用一个数字回答。
-    facit: |
+    answer_key: |
       168 minutter. 120/150 = 0,8 t = 48 min; 180/90 = 2 t = 120 min;
       i alt 168 min.
 
@@ -76,7 +76,7 @@ prompts:
         安娜（Anna）、博（Bo）、克拉拉（Clara）和大卫（David）四人在一场比赛中
         分别获得第1至第4名。大卫获得第1名。安娜在博之前到达终点。克拉拉紧接在博
         之后到达终点。请列出从第1名到第4名的完整顺序。
-    facit: |
+    answer_key: |
       1. David, 2. Anna, 3. Bo, 4. Clara. (Entydig.)
 
   - id: M4
@@ -99,7 +99,7 @@ prompts:
         {name: string, age: number, city: string, subscription: "basic" | "premium"}。
         只返回JSON，不要其他内容。
         文本："Alex Johnson，34岁，住在柏林，拥有高级订阅（premium）。"
-    facit: |
+    answer_key: |
       {"name":"Alex Johnson","age":34,"city":"Berlin","subscription":"premium"}
 
   - id: M5
@@ -139,7 +139,7 @@ prompts:
                 if n > largest:
                     largest = n
             return largest
-    facit: |
+    answer_key: |
       `largest` initialiseres til 0. For en liste med kun negative tal returneres
       0 i stedet for det største (mindst negative) tal. Rettelse:
       initialisér `largest = numbers[0]` (og håndtér eventuelt tom liste særskilt).
@@ -160,4 +160,4 @@ prompts:
       zh: |
         请列出居家办公（远程办公）对办公室员工的主要优缺点，并就何时适合居家办公
         给出平衡的建议。最多200字。
-    facit: null
+    answer_key: null

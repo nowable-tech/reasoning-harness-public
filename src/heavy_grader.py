@@ -9,7 +9,7 @@ uses for python_exec (network disabled, no persistent writes, 5s timeout) —
 reusing the harness's own sandbox rather than a second one.
 
 finance_calc / finance_interp: extract a numeric answer from free text and
-compare against the FinQA facit with 1% relative tolerance. Free-text
+compare against the FinQA answer_key with 1% relative tolerance. Free-text
 extraction is inherently imperfect — every row logs raw_extracted_numbers so
 the regex can be revised without re-running the experiment.
 """
@@ -98,12 +98,12 @@ def _relative_close(a: float, b: float, tol: float = RELATIVE_TOLERANCE) -> bool
     return abs(a - b) / abs(b) <= tol
 
 
-def grade_finance(answer_text: str, facit_answers) -> GradeResult:
+def grade_finance(answer_text: str, answer_key_answers) -> GradeResult:
     """
-    facit_answers: a single facit string, or a list of acceptable facit
+    answer_key_answers: a single answer_key string, or a list of acceptable answer_key
     strings when the question itself is ambiguous (finance_interp accepts
     two readings — see heavy_tasks.py). A single string is treated as a
-    one-element list; behavior for single-facit tasks (finance_calc) is
+    one-element list; behavior for single-answer_key tasks (finance_calc) is
     unchanged.
 
     Primary heuristic (2026-07-19 fix): the FIRST number after the LAST
@@ -127,13 +127,13 @@ def grade_finance(answer_text: str, facit_answers) -> GradeResult:
     recent statement is treated as authoritative, same principle a human
     grader would apply.
 
-    Also checks whether ANY number in the text matches ANY accepted facit,
+    Also checks whether ANY number in the text matches ANY accepted answer_key,
     for data-quality review when the primary heuristic and the tolerance
     check disagree.
     """
-    if isinstance(facit_answers, str):
-        facit_answers = [facit_answers]
-    facit_numerics = [n for n in (_parse_number(f) for f in facit_answers) if n is not None]
+    if isinstance(answer_key_answers, str):
+        answer_key_answers = [answer_key_answers]
+    answer_key_numerics = [n for n in (_parse_number(f) for f in answer_key_answers) if n is not None]
 
     numbers = _extract_numbers(answer_text)
 
@@ -147,24 +147,24 @@ def grade_finance(answer_text: str, facit_answers) -> GradeResult:
         primary = numbers[-1] if numbers else None
         extraction_method = "last_number_no_label"
 
-    matched_facit = None
+    matched_answer_key = None
     if primary is not None:
-        for fn in facit_numerics:
+        for fn in answer_key_numerics:
             if _relative_close(primary, fn):
-                matched_facit = fn
+                matched_answer_key = fn
                 break
-    correct = matched_facit is not None
+    correct = matched_answer_key is not None
 
     any_match = any(
-        _relative_close(n, fn) for n in numbers for fn in facit_numerics
+        _relative_close(n, fn) for n in numbers for fn in answer_key_numerics
     )
     return GradeResult(
         correct=correct,
         extracted_answer=str(primary) if primary is not None else "",
         detail={
-            "facit_numeric": facit_numerics[0] if len(facit_numerics) == 1 else facit_numerics,
-            "accepted_facit_numerics": facit_numerics,
-            "matched_facit": matched_facit,
+            "answer_key_numeric": answer_key_numerics[0] if len(answer_key_numerics) == 1 else answer_key_numerics,
+            "accepted_answer_key_numerics": answer_key_numerics,
+            "matched_answer_key": matched_answer_key,
             "raw_extracted_numbers": numbers[:20],
             "any_number_in_text_matches": any_match,
             "primary_matched": correct,
@@ -173,9 +173,9 @@ def grade_finance(answer_text: str, facit_answers) -> GradeResult:
     )
 
 
-def grade(domain: str, answer_text: str, facit_grading: dict) -> GradeResult:
+def grade(domain: str, answer_text: str, answer_key_grading: dict) -> GradeResult:
     """Dispatch by domain — code vs the two finance domains."""
     if domain == "code":
-        return grade_code(answer_text, facit_grading["entry_point"], facit_grading["test"])
-    facit = facit_grading.get("accepted_answers") or facit_grading["answer"]
-    return grade_finance(answer_text, facit)
+        return grade_code(answer_text, answer_key_grading["entry_point"], answer_key_grading["test"])
+    answer_key = answer_key_grading.get("accepted_answers") or answer_key_grading["answer"]
+    return grade_finance(answer_text, answer_key)

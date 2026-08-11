@@ -83,7 +83,7 @@ def main() -> int:
 
     for task_id in all_task_ids:
         p = prompts[task_id]
-        assert "facit" not in p, f"CRITICAL SECURITY VIOLATION: facit in request-path object for {task_id}"
+        assert "answer_key" not in p, f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {task_id}"
         p_type = p.get("type", "?")
         p_load = p.get("reasoning_load", "?")
 

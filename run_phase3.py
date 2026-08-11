@@ -3,7 +3,7 @@
 Phase 3 — Correctness scoring.
 
 Reads Phase 1 answer_text from results/full/*.jsonl. NO new panel model calls.
-Grades 6 facit prompts (P3–P8) across all 6 models using two paths:
+Grades 6 answer_key prompts (P3–P8) across all 6 models using two paths:
   Programmatic (exact): P5 (math), P6 (logic), P7 (JSON)
   LLM grader (blind):   P3 (legal), P4 (legal), P8 (code bug)
 
@@ -68,8 +68,8 @@ VERDICT_WEIGHT: dict[str, float] = {"correct": 1.0, "partial": 0.5, "incorrect":
 # Data loading
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _load_facit_prompts() -> dict[str, dict]:
-    """Load ALL prompt fields including facit — only valid on the grading path."""
+def _load_answer_key_prompts() -> dict[str, dict]:
+    """Load ALL prompt fields including answer_key — only valid on the grading path."""
     data_dir = pathlib.Path(__file__).parent / "data"
     with open(data_dir / "prompts.yaml") as f:
         raw = yaml.safe_load(f)
@@ -132,7 +132,7 @@ h2 { color: #343a40; font-size: 1.05rem; margin: 36px 0 6px; }
 .prompt-text { font-size: .85rem; background: #fff; border-left: 4px solid #adb5bd;
                padding: 10px 14px; white-space: pre-wrap; margin: 6px 0 12px;
                border-radius: 0 4px 4px 0; max-height: 180px; overflow-y: auto; }
-.facit-block { font-size: .85rem; background: #e8f4f8; border-left: 4px solid #0d6efd;
+.answer_key-block { font-size: .85rem; background: #e8f4f8; border-left: 4px solid #0d6efd;
                padding: 10px 14px; white-space: pre-wrap; margin: 6px 0 20px;
                border-radius: 0 4px 4px 0; }
 .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
@@ -157,7 +157,7 @@ def _generate_html(
     run_id: str,
     p1_run_id: str,
     results: dict[tuple[str, str], GradeResult],
-    facit_prompts: dict[str, dict],
+    answer_key_prompts: dict[str, dict],
     phase1_index: dict[tuple[str, str], dict],
     model_order: list[str] | None = None,
 ) -> pathlib.Path:
@@ -165,9 +165,9 @@ def _generate_html(
     display_order = model_order if model_order is not None else MODEL_ORDER
     blocks: list[str] = []
     for pid in ["P3", "P4"]:
-        fp = facit_prompts[pid]
+        fp = answer_key_prompts[pid]
         prompt_escaped = html_lib.escape(fp.get("prompt", ""))
-        facit_escaped = html_lib.escape(fp.get("facit", ""))
+        answer_key_escaped = html_lib.escape(fp.get("answer_key", ""))
         p_type = html_lib.escape(fp.get("type", ""))
         p_load = html_lib.escape(fp.get("reasoning_load", ""))
 
@@ -202,8 +202,8 @@ def _generate_html(
             f'<span style="color:#6c757d;font-weight:normal">load: {p_load}</span></h2>'
             f'<p style="font-size:.85rem;color:#495057">Prompt:</p>'
             f'<div class="prompt-text">{prompt_escaped}</div>'
-            f'<p style="font-size:.85rem;color:#495057"><strong>Grading key (facit):</strong></p>'
-            f'<div class="facit-block">{facit_escaped}</div>'
+            f'<p style="font-size:.85rem;color:#495057"><strong>Grading key (answer_key):</strong></p>'
+            f'<div class="answer_key-block">{answer_key_escaped}</div>'
             f'<div class="model-grid">{"".join(cards)}</div>'
         )
 
@@ -219,7 +219,7 @@ def _generate_html(
         f"<b>Source:</b> {html_lib.escape(p1_run_id)} &nbsp; "
         f"<b>Generated:</b> {generated_at}</p>",
         "<p><em><strong>Action required:</strong> Review each model's answer against "
-        "the facit and confirm the LLM verdicts are correct before finalizing. "
+        "the answer_key and confirm the LLM verdicts are correct before finalizing. "
         "P5/P6/P7 are programmatic and need no confirmation.</em></p>",
         "<hr>",
         *blocks,
@@ -260,7 +260,7 @@ def main() -> None:
         print(f"\n  ERROR: {e}\n")
         sys.exit(1)
 
-    facit_prompts = _load_facit_prompts()
+    answer_key_prompts = _load_answer_key_prompts()
     panel = load_panel()
 
     grader_cfg = panel.get(GRADER_PANEL_KEY, {})
@@ -280,7 +280,7 @@ def main() -> None:
     print(f"  PHASE 3 — Correctness Scoring   run_id={run_id}")
     print(f"  Source: {p1_run_id}")
     print(f"  Grader: {GRADER_PANEL_KEY} ({grader_or_id})")
-    print(f"  Prompts: {', '.join(CORRECTNESS_PROMPTS)}  ({len(CORRECTNESS_PROMPTS)} facit prompts)")
+    print(f"  Prompts: {', '.join(CORRECTNESS_PROMPTS)}  ({len(CORRECTNESS_PROMPTS)} answer_key prompts)")
     models_in_source = {r["model_key"] for r in phase1_rows}
     effective_order = [m for m in MODEL_ORDER if m in models_in_source]
     print(f"  Models: {', '.join(effective_order)}  (correctness scores answers, not traces)")
@@ -296,8 +296,8 @@ def main() -> None:
     total_cost = 0.0
 
     for pid in CORRECTNESS_PROMPTS:
-        fp = facit_prompts.get(pid, {})
-        facit = str(fp.get("facit", ""))
+        fp = answer_key_prompts.get(pid, {})
+        answer_key = str(fp.get("answer_key", ""))
         prompt_text = fp.get("prompt", "")
         p_type = fp.get("type", "?")
         method = "programmatic" if pid in PROGRAMMATIC_PROMPTS else f"llm_grader ({GRADER_PANEL_KEY})"
@@ -319,7 +319,7 @@ def main() -> None:
             if pid in PROGRAMMATIC_PROMPTS:
                 grade = grade_programmatic(pid, answer)
             else:
-                grade = grade_llm(pid, answer, facit, grader_or_id, GRADER_PRICING_KEY)
+                grade = grade_llm(pid, answer, answer_key, grader_or_id, GRADER_PRICING_KEY)
 
             grade.model_key = mk
             results[(pid, mk)] = grade
@@ -337,7 +337,7 @@ def main() -> None:
     # ── Aggregate 1: correctness rate per model ───────────────────────────────
     W = 100
     print(f"\n{'═'*W}")
-    print(f"  AGGREGATE 1 — Correctness rate per model  (across {len(CORRECTNESS_PROMPTS)} facit prompts)")
+    print(f"  AGGREGATE 1 — Correctness rate per model  (across {len(CORRECTNESS_PROMPTS)} answer_key prompts)")
     print(f"  correct=1.0 pt  partial=0.5 pt  incorrect=0 pt")
     print(f"{'═'*W}")
     print(f"  {'Model':<22}  {'Correct':>8}  {'Partial':>8}  {'Incorrect':>10}  "
@@ -425,14 +425,14 @@ def main() -> None:
     )
 
     # ── HTML for P3/P4 + STOP ─────────────────────────────────────────────────
-    html_path = _generate_html(run_id, p1_run_id, results, facit_prompts, phase1_index,
+    html_path = _generate_html(run_id, p1_run_id, results, answer_key_prompts, phase1_index,
                                 model_order=effective_order)
     print(f"\n{'═'*W}")
     print(f"  HTML review written → {html_path}")
     print()
     print(f"  STOP — review P3 and P4 verdicts in the HTML before finalizing.")
     print(f"  These are the two Danish legal prompts graded by LLM. Confirm that")
-    print(f"  the verdicts match your reading of the answers against the facit.")
+    print(f"  the verdicts match your reading of the answers against the answer_key.")
     print()
     print(f"  Objective prompts P5/P6/P7 are programmatic and need no confirmation.")
     print(f"  P8 (code bug) is LLM-graded — also visible in the JSONL if you want to check.")

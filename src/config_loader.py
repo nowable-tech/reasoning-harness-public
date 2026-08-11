@@ -33,7 +33,7 @@ def load_prompts() -> dict[str, dict]:
     """
     Load prompts from config/prompts.yaml, keyed by prompt ID.
 
-    SECURITY INVARIANT: facit is stripped before returning. It must never
+    SECURITY INVARIANT: answer_key is stripped before returning. It must never
     appear in any outgoing model request. The function asserts this on every
     call — if the strip ever fails, execution stops with a hard error.
     """
@@ -43,16 +43,16 @@ def load_prompts() -> dict[str, dict]:
     result: dict[str, dict] = {}
     for entry in raw["prompts"]:
         pid = entry["id"]
-        # Require facit to exist in source so omissions are caught early.
-        assert "facit" in entry, (
-            f"prompt {pid} is missing the 'facit' field — "
+        # Require answer_key to exist in source so omissions are caught early.
+        assert "answer_key" in entry, (
+            f"prompt {pid} is missing the 'answer_key' field — "
             "add it (null is acceptable if there is no known answer)"
         )
-        # Strip facit — this is the guard on the request path.
-        send_obj = {k: v for k, v in entry.items() if k != "facit"}
-        # Hard assertion: facit must not survive the strip.
-        assert "facit" not in send_obj, (
-            f"BUG: facit leaked into the request-path object for prompt {pid}"
+        # Strip answer_key — this is the guard on the request path.
+        send_obj = {k: v for k, v in entry.items() if k != "answer_key"}
+        # Hard assertion: answer_key must not survive the strip.
+        assert "answer_key" not in send_obj, (
+            f"BUG: answer_key leaked into the request-path object for prompt {pid}"
         )
         result[pid] = send_obj
     return result
@@ -62,8 +62,8 @@ def load_multilang_prompts() -> dict[str, dict]:
     """
     Load multilingual prompts from config/prompts_multilang.yaml, keyed by prompt ID.
 
-    SECURITY INVARIANT: identical to load_prompts() — facit is stripped before
-    returning. The variants dict (da/en/zh) is safe to send; facit is not.
+    SECURITY INVARIANT: identical to load_prompts() — answer_key is stripped before
+    returning. The variants dict (da/en/zh) is safe to send; answer_key is not.
     """
     with open(CONFIG_DIR / "prompts_multilang.yaml") as f:
         raw = yaml.safe_load(f)
@@ -71,13 +71,13 @@ def load_multilang_prompts() -> dict[str, dict]:
     result: dict[str, dict] = {}
     for entry in raw["prompts"]:
         pid = entry["id"]
-        assert "facit" in entry, (
-            f"multilang prompt {pid} is missing the 'facit' field — "
+        assert "answer_key" in entry, (
+            f"multilang prompt {pid} is missing the 'answer_key' field — "
             "add it (null is acceptable if there is no known answer)"
         )
-        send_obj = {k: v for k, v in entry.items() if k != "facit"}
-        assert "facit" not in send_obj, (
-            f"BUG: facit leaked into the request-path object for multilang prompt {pid}"
+        send_obj = {k: v for k, v in entry.items() if k != "answer_key"}
+        assert "answer_key" not in send_obj, (
+            f"BUG: answer_key leaked into the request-path object for multilang prompt {pid}"
         )
         result[pid] = send_obj
     return result

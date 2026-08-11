@@ -53,10 +53,10 @@ Cost formula (`src/cost.py`):
 Ten Danish prompts. Each entry has:
 
 - `id`, `type`, `reasoning_load` (low/medium/high/very_high),
-  `language_probe`, `carries_correctness` (whether `facit` is meaningful
+  `language_probe`, `carries_correctness` (whether `answer_key` is meaningful
   for this prompt or `null`).
 - `prompt` — the only field sent to the model.
-- `facit` — the answer key. `null` for open-ended prompts (P1, P2, P9, P10)
+- `answer_key` — `null` for open-ended prompts (P1, P2, P9, P10)
   that have no single correct answer; a string (sometimes with a short
   justification) for the six prompts that carry correctness (P3–P8).
 
@@ -64,24 +64,24 @@ Ten Danish prompts. Each entry has:
 
 Six tasks, each with `da`/`en`/`zh` variants expressing the same content
 (English is the translation pivot; Chinese variants are machine-translated
-and unverified by a fluent speaker — see the file's header). `facit` is
+and unverified by a fluent speaker — see the file's header). `answer_key` is
 again the blind answer key, `null` for the two open-ended tasks (M1, M6).
 
-## The facit contract
+## The answer_key contract
 
-**`facit` must never reach a model.** Both `load_prompts()` and
-`load_multilang_prompts()` in `src/config_loader.py` strip the `facit` key
-before returning, and each asserts twice per call — once that `facit` was
+**`answer_key` must never reach a model.** Both `load_prompts()` and
+`load_multilang_prompts()` in `src/config_loader.py` strip the `answer_key` key
+before returning, and each asserts twice per call — once that `answer_key` was
 present in the source (so a missing key is caught early, not silently
 treated as "no answer"), and once that it does not survive the strip (so a
 bug in the strip logic itself hard-stops the run instead of leaking).
 
-If you add a new prompt: always include a `facit` key, even if it's
+If you add a new prompt: always include a `answer_key` key, even if it's
 `null`. If you write code that reads these YAML files directly instead of
-going through `config_loader.py`, you are responsible for stripping `facit`
+going through `config_loader.py`, you are responsible for stripping `answer_key`
 yourself before it touches any outgoing request — don't bypass the loader
 on the request path.
 
 Grading code (`src/grader.py`, `src/heavy_grader.py`, `run_phase3.py`) is
-the one place `facit` is legitimately used — always after the model's
+the one place `answer_key` is legitimately used — always after the model's
 answer has already been generated, never before or during.

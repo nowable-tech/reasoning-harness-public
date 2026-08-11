@@ -1,6 +1,6 @@
 """
 Standalone candidate test: OpenRouter's Auto Router (`openrouter/auto`)
-against our facit — NOT a panel addition.
+against our answer_key — NOT a panel addition.
 
 Auto is not a model. It is a routing POLICY sitting on top of the panel's
 models (and possibly others): it picks which underlying model answers each
@@ -248,7 +248,7 @@ def run() -> None:
 
     adapter = OpenRouterAutoAdapter()
     prompts = load_prompts()
-    heavy_tasks = load_heavy_tasks(with_facit=True)
+    heavy_tasks = load_heavy_tasks(with_answer_key=True)
     panel_pricing = load_pricing()
     panel_pricing_snapshot_date = panel_pricing["snapshot_date"]
 
@@ -331,8 +331,8 @@ def run() -> None:
                         extracted_answer = None
                         grading_detail = {"grading_method": "none", "note": "carries_correctness=false"}
                 else:
-                    facit_grading = heavy_tasks[domain]["facit_grading"]
-                    gr = grade_heavy(domain, response.answer_text, facit_grading)
+                    answer_key_grading = heavy_tasks[domain]["answer_key_grading"]
+                    gr = grade_heavy(domain, response.answer_text, answer_key_grading)
                     correct = gr.correct
                     extracted_answer = gr.extracted_answer
                     grading_detail = gr.detail
@@ -412,7 +412,7 @@ def run() -> None:
 
     meta = {
         "run_id": run_id,
-        "purpose": "Standalone candidate test of openrouter/auto against panel facit — not a panel member.",
+        "purpose": "Standalone candidate test of openrouter/auto against panel answer_key — not a panel member.",
         "request_model_id": AUTO_SLUG,
         "reasoning_effort": REASONING_EFFORT,
         "thinking_budget": THINKING_BUDGET,

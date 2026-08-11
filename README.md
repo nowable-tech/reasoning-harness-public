@@ -103,7 +103,7 @@ python3 run.py --variance --passes 2
 Grading + judges (run in this order):
 
 ```bash
-python3 run_phase3.py                 # Phase 3: correctness (P3–P8 facit grading)
+python3 run_phase3.py                 # Phase 3: correctness (P3–P8 answer_key grading)
 python3 run.py --validate-judges      # Phase 2 gate: judges on Gemma traces only
 python3 run.py --judge                # Phase 2 full: judges on all raw-trace models
 ```
@@ -124,7 +124,7 @@ list.
 
 - **Light suite** (`config/prompts.yaml`, P1–P10): Danish natural-language,
   legal reasoning, math, logic, code-structure, code-bug, and open-analysis
-  prompts. One pass per model. `facit` (the answer key) is present for the
+  prompts. One pass per model. `answer_key` is present for the
   six prompts that carry correctness (P3–P8) and is stripped before any
   request is sent — see [config/README.md](config/README.md).
 - **Heavy suite** (`src/heavy_tasks.py`): three tasks from established,
@@ -137,7 +137,7 @@ list.
     (Chen et al., EMNLP 2021) records `CDNS/2015/page_30.pdf-3` and
     `AMAT/2013/page_37.pdf-2`. FinQA is CC BY 4.0-licensed; redistributed
     here under that license with attribution.
-  - `finance_interp`'s facit encodes a documented correction: FinQA's own
+  - `finance_interp`'s answer_key encodes a documented correction: FinQA's own
     `qa.answer` string for that record is missing a trailing zero (a known
     dataset annotation issue), and the question is separately ambiguous
     between two defensible readings — both are accepted. See the comment in
@@ -270,8 +270,8 @@ per-model cost breakdown each phase prints at the end.
   construction-time credential check.
 - **Add a task**: append an entry to `config/prompts.yaml` (light suite) or
   `config/prompts_multilang.yaml` (multilingual supplement), following the
-  existing `id`/`facit` structure. See
-  [config/README.md](config/README.md) for the facit contract — it must
+  existing `id`/`answer_key` structure. See
+  [config/README.md](config/README.md) for the answer_key contract — it must
   never enter the request path.
 - **Add a judge rubric**: `src/judge.py` holds the default legibility rubric;
   `src/judge_rubric.py` holds an alternate ("anchored") rubric used by

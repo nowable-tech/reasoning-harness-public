@@ -120,7 +120,7 @@ def main() -> int:
                 break
 
             p = prompts[pid]
-            assert "facit" not in p, f"CRITICAL SECURITY VIOLATION: facit in request-path object for {pid}"
+            assert "answer_key" not in p, f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {pid}"
             prompt_text: str = p["prompt"]
 
             try:
@@ -179,8 +179,8 @@ def main() -> int:
         heavy_run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "_heavy"
         heavy_dir = RESULTS_DIR / "heavy"
         heavy_traces_dir = heavy_dir / f"{heavy_run_id}_traces"
-        tasks_safe = load_heavy_tasks(with_facit=False)
-        tasks_facit = load_heavy_tasks(with_facit=True)
+        tasks_safe = load_heavy_tasks(with_answer_key=False)
+        tasks_answer_key = load_heavy_tasks(with_answer_key=True)
 
         tool_defs = available_tool_defs()
         tools_available_names = [t["name"] for t in tool_defs]
@@ -194,13 +194,13 @@ def main() -> int:
         if not stopped_reason:
             for task_key in HEAVY_TASK_KEYS:
                 task = tasks_safe[task_key]
-                assert "facit_grading" not in task, (
-                    f"CRITICAL SECURITY VIOLATION: facit_grading in request-path object for {task_key}"
+                assert "answer_key_grading" not in task, (
+                    f"CRITICAL SECURITY VIOLATION: answer_key_grading in request-path object for {task_key}"
                 )
                 base_prompt: str = task["prompt"]
                 domain = task["domain"]
                 task_id = task["task_id"]
-                facit_grading = tasks_facit[task_key]["facit_grading"]
+                answer_key_grading = tasks_answer_key[task_key]["answer_key_grading"]
 
                 for condition in HEAVY_CONDITIONS:
                     prompt_text = base_prompt + (HEAVY_INVITATION if condition == "invited_auto" else "")
@@ -253,7 +253,7 @@ def main() -> int:
                         account = build_account(resp)
                         cost_usd, snapshot_date = compute_cost(MODEL_KEY, account)
                         total_cost += cost_usd
-                        gr = grade_heavy(domain, resp.answer_text, facit_grading)
+                        gr = grade_heavy(domain, resp.answer_text, answer_key_grading)
                         tools_used = _tool_names_used(resp)
 
                         save_heavy_result(

@@ -1,5 +1,5 @@
 """
-Phase 3 grader — correctness scoring of saved Phase 1 answers against the facit.
+Phase 3 grader — correctness scoring of saved Phase 1 answers against the answer_key.
 
 Two paths:
   Programmatic (exact, no LLM): P5 (math=168), P6 (logic=David,Anna,Bo,Clara), P7 (JSON)
@@ -80,7 +80,7 @@ def _grade_p6_logic(answer: str) -> tuple[str, str]:
 
 
 def _grade_p7_json(answer: str) -> tuple[str, str]:
-    """P7: correct iff JSON matches facit field-by-field."""
+    """P7: correct iff JSON matches answer_key field-by-field."""
     cleaned = re.sub(r'```(?:json)?\s*', '', answer).strip().rstrip('`').strip()
     m = re.search(r'\{.*\}', cleaned, re.DOTALL)
     if not m:
@@ -167,9 +167,9 @@ _GRADER_PROMPT = """\
 You are grading a student answer against a grading key. You do not know which model produced this answer — that information has been intentionally withheld.
 
 GRADING KEY:
-<facit>
-{facit}
-</facit>
+<answer_key>
+{answer_key}
+</answer_key>
 
 STUDENT ANSWER:
 <answer>
@@ -199,12 +199,12 @@ def _grader_cost(pricing_key: str, input_tokens: int, output_tokens: int) -> flo
 def grade_llm(
     prompt_id: str,
     answer: str,
-    facit: str,
+    answer_key: str,
     grader_openrouter_id: str,
     grader_pricing_key: str,
 ) -> GradeResult:
     """
-    Send a (prompt_id, answer, facit) triple to the LLM grader.
+    Send a (prompt_id, answer, answer_key) triple to the LLM grader.
     Model identity is NOT included in the grader prompt.
     Retries up to 3× on empty content or parse failure.
     """
@@ -218,7 +218,7 @@ def grade_llm(
     client = OpenAI(api_key=or_key, base_url=OPENROUTER_BASE_URL)
     criteria = _GRADER_CRITERIA[prompt_id]
     grader_prompt = _GRADER_PROMPT.format(
-        facit=facit.strip(),
+        answer_key=answer_key.strip(),
         answer=answer.strip(),
         criteria=criteria,
     )

@@ -9,7 +9,7 @@ Usage:
 Outputs two re-cut aggregates — no new model calls:
   A) Language matrix (raw models only as findings; claude/gpt explicitly excluded)
   B) Absolute reasoning-token volume by reasoning_load
-     (raw cluster × facit prompts only, so output length doesn't dilute difficulty)
+     (raw cluster × answer_key prompts only, so output length doesn't dilute difficulty)
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ RESULTS_DIR = Path(__file__).parent / "results" / "full"
 # Prompts where carries_correctness=True and output is short.
 # Using these isolates the difficulty signal from reasoning_load without it
 # being washed out by the long, open-ended output of P1/P2/P9/P10.
-FACIT_PROMPTS: set[str] = {"P3", "P4", "P5", "P6", "P7", "P8"}
+ANSWER_KEY_PROMPTS: set[str] = {"P3", "P4", "P5", "P6", "P7", "P8"}
 
 # Display order within the raw-cluster findings
 RAW_FINDING_MODELS: list[str] = ["deepseek_v4", "glm_5_2", "kimi_k2_7", "gemma_4"]
@@ -162,24 +162,24 @@ def print_aggregate_a(rows: list[dict], all_pids: list[str]) -> None:
 def print_aggregate_b(rows: list[dict], all_pids: list[str]) -> None:
     """
     Absolute reasoning-token volume by reasoning_load.
-    Raw cluster only; facit prompts only (P3–P8) so short output keeps the
+    Raw cluster only; answer_key prompts only (P3–P8) so short output keeps the
     difficulty signal clean.
     """
-    facit_raw = [
+    answer_key_raw = [
         r for r in rows
         if r["model_key"] in RAW_CLUSTER
-        and r["prompt_id"] in FACIT_PROMPTS
+        and r["prompt_id"] in ANSWER_KEY_PROMPTS
     ]
 
     by_pid_model: dict[tuple[str, str], dict] = {
-        (r["prompt_id"], r["model_key"]): r for r in facit_raw
+        (r["prompt_id"], r["model_key"]): r for r in answer_key_raw
     }
 
     probe_of: dict[str, str] = {r["prompt_id"]: r["language_probe"] for r in rows}
     load_of:  dict[str, str] = {r["prompt_id"]: r["reasoning_load"]  for r in rows}
 
-    facit_pids = sorted(
-        FACIT_PROMPTS,
+    answer_key_pids = sorted(
+        ANSWER_KEY_PROMPTS,
         key=lambda p: (LOAD_ORDER.index(load_of.get(p, "low")), int(p[1:]))
     )
 
@@ -193,7 +193,7 @@ def print_aggregate_b(rows: list[dict], all_pids: list[str]) -> None:
     print(f"\n{'═'*W}")
     print(f"  RECUT AGGREGATE B — Reasoning token VOLUME by difficulty")
     print(f"  Raw cluster: deepseek / glm / kimi")
-    print(f"  Facit prompts only (P3–P8, carries_correctness=True)")
+    print(f"  Answer-key prompts only (P3–P8, carries_correctness=True)")
     print(f"  Short output keeps difficulty signal from being diluted by answer length.")
     print(f"{'═'*W}")
 
@@ -203,7 +203,7 @@ def print_aggregate_b(rows: list[dict], all_pids: list[str]) -> None:
 
     load_buckets: dict[str, list[int]] = {k: [] for k in LOAD_ORDER}
 
-    for pid in facit_pids:
+    for pid in answer_key_pids:
         load = load_of.get(pid, "?")
         probe = probe_of.get(pid, "?")
         vals: list[int] = []
@@ -223,7 +223,7 @@ def print_aggregate_b(rows: list[dict], all_pids: list[str]) -> None:
     print(f"  {'─'*72}")
 
     # By-load summary
-    print(f"\n  By reasoning_load  (avg / min / max across facit prompts × 3 models):")
+    print(f"\n  By reasoning_load  (avg / min / max across answer_key prompts × 3 models):")
     print(f"\n  {'Load':<12}  {'n':>4}  {'Avg tokens':>11}  {'Min':>7}  {'Max':>7}")
     print(f"  {'─'*50}")
     for load in LOAD_ORDER:

@@ -9,16 +9,16 @@ Datasets are downloaded once and cached under data/heavy/ (gitignored — these
 are third-party redistributions, not our own curated content, unlike
 config/prompts.yaml).
 
-SECURITY INVARIANT: load_heavy_tasks() defaults to with_facit=False and never
+SECURITY INVARIANT: load_heavy_tasks() defaults to with_answer_key=False and never
 includes grading data in that path — mirrors config_loader.load_prompts()'s
-strip-before-return contract. with_facit=True is valid ONLY on the grading
+strip-before-return contract. with_answer_key=True is valid ONLY on the grading
 path (never sent to a model).
 
 EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT the fetched task text, the
-CODE_INSTRUCTION/finance instruction strings below, or facit_grading
+CODE_INSTRUCTION/finance instruction strings below, or answer_key_grading
 values. They are the literal content sent to (or graded against for) every
 model in every existing run; the base HumanEval/FinQA text is already
-English by upstream license, but the instruction wrappers and facit here
+English by upstream license, but the instruction wrappers and answer_key here
 are ours and are just as frozen as config/prompts.yaml's — see that file's
 header. The invited_auto condition additionally appends run.py's
 TOOLS3_INVITATION (Danish, frozen separately there).
@@ -114,12 +114,12 @@ def _build_finqa_prompt(rec: dict) -> str:
     )
 
 
-def load_heavy_tasks(with_facit: bool = False) -> dict[str, dict]:
+def load_heavy_tasks(with_answer_key: bool = False) -> dict[str, dict]:
     """
-    Returns {task_key: {"task_id", "domain", "prompt", ["facit_grading"]}}.
+    Returns {task_key: {"task_id", "domain", "prompt", ["answer_key_grading"]}}.
 
-    with_facit=False (default): request-path safe — no grading data present.
-    with_facit=True: adds "facit_grading" — grading path ONLY, never sent to a model.
+    with_answer_key=False (default): request-path safe — no grading data present.
+    with_answer_key=True: adds "answer_key_grading" — grading path ONLY, never sent to a model.
     """
     he = _load_humaneval_record(HUMANEVAL_TASK_ID)
     fq_calc = _load_finqa_record(FINQA_CALC_ID)
@@ -143,14 +143,14 @@ def load_heavy_tasks(with_facit: bool = False) -> dict[str, dict]:
         },
     }
 
-    if not with_facit:
+    if not with_answer_key:
         return tasks
 
-    tasks["code"]["facit_grading"] = {
+    tasks["code"]["answer_key_grading"] = {
         "entry_point": he["entry_point"],
         "test": he["test"],
     }
-    tasks["finance_calc"]["facit_grading"] = {"answer": fq_calc["qa"]["answer"]}
+    tasks["finance_calc"]["answer_key_grading"] = {"answer": fq_calc["qa"]["answer"]}
     # finance_interp: FinQA's qa.answer string ("3829") is a dataset annotation
     # bug — it's missing a trailing zero. qa.exe_ans is 38290.0, and the FinQA
     # program (subtract(138.29, const_100), divide(100000, const_100),
@@ -161,10 +161,10 @@ def load_heavy_tasks(with_facit: bool = False) -> dict[str, dict]:
     # return", so both are accepted, each with the usual 1% relative
     # tolerance (see grade_finance in heavy_grader.py).
     assert fq_interp["qa"]["answer"] == "3829", (
-        "finance_interp source facit changed upstream — re-verify the "
+        "finance_interp source answer_key changed upstream — re-verify the "
         "38290/138290 correction still applies before trusting it silently."
     )
-    tasks["finance_interp"]["facit_grading"] = {
+    tasks["finance_interp"]["answer_key_grading"] = {
         "answer": "38290",
         "accepted_answers": ["38290", "138290"],
     }

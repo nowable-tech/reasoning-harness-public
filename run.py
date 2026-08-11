@@ -425,7 +425,7 @@ def run_pilot(prompt_ids: list[str]) -> int:
     experiment = load_experiment()
     reasoning_effort: str = experiment.get("reasoning_effort", "high")
 
-    # load_prompts() strips facit — it must never appear on the request path.
+    # load_prompts() strips answer_key — it must never appear on the request path.
     prompts = load_prompts()
 
     # Validate requested prompt IDs.
@@ -480,9 +480,9 @@ def run_pilot(prompt_ids: list[str]) -> int:
     for pid in prompt_ids:
         p = prompts[pid]
 
-        # Runtime guard: facit must not be present on the request path.
-        assert "facit" not in p, (
-            f"CRITICAL SECURITY VIOLATION: facit present in request-path object for {pid}"
+        # Runtime guard: answer_key must not be present on the request path.
+        assert "answer_key" not in p, (
+            f"CRITICAL SECURITY VIOLATION: answer_key present in request-path object for {pid}"
         )
         prompt_text: str = p["prompt"]
         p_type = p.get("type", "")
@@ -706,8 +706,8 @@ def run_full(model_filter: Optional[list[str]] = None, allow_direct: bool = Fals
     # --- Per-prompt loop ---
     for pid in all_prompt_ids:
         p = prompts[pid]
-        assert "facit" not in p, (
-            f"CRITICAL SECURITY VIOLATION: facit in request-path object for {pid}"
+        assert "answer_key" not in p, (
+            f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {pid}"
         )
         prompt_text: str = p["prompt"]
         p_type = p.get("type", "?")
@@ -1056,8 +1056,8 @@ def run_juni_recap_mistral(allow_direct: bool = False) -> int:
 
     for pid in all_prompt_ids:
         p = prompts[pid]
-        assert "facit" not in p, (
-            f"CRITICAL SECURITY VIOLATION: facit in request-path object for {pid}"
+        assert "answer_key" not in p, (
+            f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {pid}"
         )
         prompt_text: str = p["prompt"]
         p_load = p.get("reasoning_load", "?")
@@ -1785,8 +1785,8 @@ def run_langcost(full: bool = False, steer: bool = False, allow_direct: bool = F
 
     for task_id in task_ids:
         p = prompts[task_id]
-        assert "facit" not in p, (
-            f"CRITICAL SECURITY VIOLATION: facit in request-path object for {task_id}"
+        assert "answer_key" not in p, (
+            f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {task_id}"
         )
         p_type = p.get("type", "?")
         p_load = p.get("reasoning_load", "?")
@@ -2398,7 +2398,7 @@ def run_langcost_report(source_run_id: Optional[str] = None) -> int:
 # not hand-curated here.
 TOOLS_MODELS: list[str] = FULL_MODEL_ORDER
 
-# P1, P2, P9, P10 are open/no-facit tasks — no tool call is expected. A tool
+# P1, P2, P9, P10 are open/no-answer_key tasks — no tool call is expected. A tool
 # call here is flagged as mis-routing, not suppressed.
 TOOLS_CONTROL_GROUP: set[str] = {"P1", "P2", "P9", "P10"}
 
@@ -2448,7 +2448,7 @@ def run_tools(allow_direct: bool = False) -> int:
     print(f"  Tools offered to Arm B: {', '.join(tools_available_names)}")
     if not search_available():
         print(f"  !! web_search PENDING — SEARCH_API_KEY not set. repl-offload measurement proceeds unaffected.")
-    print(f"  reasoning_effort={reasoning_effort!r}  |  closed-book rule unchanged (facit never sent)")
+    print(f"  reasoning_effort={reasoning_effort!r}  |  closed-book rule unchanged (answer_key never sent)")
     print(f"{'═'*120}")
 
     resolved = resolve_models(panel, model_keys)
@@ -2461,7 +2461,7 @@ def run_tools(allow_direct: bool = False) -> int:
     has_failure = False
     agg: list[dict] = []              # one entry per (model, pid, arm) that produced a response
     unexpected_serverside: list[dict] = []  # raw tool events whose name we never declared
-    control_group_hits: list[dict] = []     # tool calls on no-facit control prompts
+    control_group_hits: list[dict] = []     # tool calls on no-answer_key control prompts
 
     col_hdr = (
         f"  {'Model':<22} {'Arm':<9} {'Inp':>6} {'Reas':>7} {'Out':>6}  "
@@ -2471,8 +2471,8 @@ def run_tools(allow_direct: bool = False) -> int:
 
     for pid in all_prompt_ids:
         p = prompts[pid]
-        assert "facit" not in p, (
-            f"CRITICAL SECURITY VIOLATION: facit in request-path object for {pid}"
+        assert "answer_key" not in p, (
+            f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {pid}"
         )
         prompt_text: str = p["prompt"]
         p_type = p.get("type", "?")
@@ -2747,7 +2747,7 @@ def run_tools(allow_direct: bool = False) -> int:
     print(f"  CONTROL GROUP (P1/P2/P9/P10 — no tool call expected)")
     print(f"{'═'*100}")
     if control_group_hits:
-        print(f"  MIS-ROUTING DETECTED — a model called a tool on an open/no-facit prompt:")
+        print(f"  MIS-ROUTING DETECTED — a model called a tool on an open/no-answer_key prompt:")
         for h in control_group_hits:
             print(f"    {h['model_key']:<22} {h['pid']:<6} tools_used={h['tools_used']}")
     else:
@@ -2879,8 +2879,8 @@ def run_variance(passes: int = 2, allow_direct: bool = False) -> int:
         for pass_index in range(1, passes + 1):
             for pid in all_prompt_ids:
                 p = prompts[pid]
-                assert "facit" not in p, (
-                    f"CRITICAL SECURITY VIOLATION: facit in request-path object for {pid}"
+                assert "answer_key" not in p, (
+                    f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {pid}"
                 )
                 prompt_text: str = p["prompt"]
 
@@ -3231,8 +3231,8 @@ def run_tools3(repeats: int = 5, allow_direct: bool = False) -> int:
             provider = cfg["provider"]
             thinking_budget: int = cfg.get("thinking_budget", 4096)
             p = prompts[pid]
-            assert "facit" not in p, (
-                f"CRITICAL SECURITY VIOLATION: facit in request-path object for {pid}"
+            assert "answer_key" not in p, (
+                f"CRITICAL SECURITY VIOLATION: answer_key in request-path object for {pid}"
             )
             prompt_text: str = p["prompt"] + TOOLS3_INVITATION
             tool_choice = "auto" if condition == "invited_auto" else "required"
@@ -3473,8 +3473,8 @@ def run_heavy(repeats: int = 5, allow_direct: bool = False) -> int:
     experiment = load_experiment()
     reasoning_effort: str = experiment.get("reasoning_effort", "high")
 
-    tasks_safe = load_heavy_tasks(with_facit=False)
-    tasks_facit = load_heavy_tasks(with_facit=True)
+    tasks_safe = load_heavy_tasks(with_answer_key=False)
+    tasks_answer_key = load_heavy_tasks(with_answer_key=True)
 
     model_keys = [
         k for k in HEAVY_MODELS
@@ -3532,13 +3532,13 @@ def run_heavy(repeats: int = 5, allow_direct: bool = False) -> int:
 
         for task_key in HEAVY_TASK_KEYS:
             task = tasks_safe[task_key]
-            assert "facit_grading" not in task, (
-                f"CRITICAL SECURITY VIOLATION: facit_grading in request-path object for {task_key}"
+            assert "answer_key_grading" not in task, (
+                f"CRITICAL SECURITY VIOLATION: answer_key_grading in request-path object for {task_key}"
             )
             base_prompt: str = task["prompt"]
             domain = task["domain"]
             task_id = task["task_id"]
-            facit_grading = tasks_facit[task_key]["facit_grading"]
+            answer_key_grading = tasks_answer_key[task_key]["answer_key_grading"]
 
             for condition in HEAVY_CONDITIONS:
                 prompt_text = base_prompt + (HEAVY_INVITATION if condition == "invited_auto" else "")
@@ -3610,7 +3610,7 @@ def run_heavy(repeats: int = 5, allow_direct: bool = False) -> int:
 
                         account = build_account(resp)
                         cost_usd, snapshot_date = compute_cost(model_key, account)
-                        gr = grade_heavy(domain, resp.answer_text, facit_grading)
+                        gr = grade_heavy(domain, resp.answer_text, answer_key_grading)
                         tools_used = _tool_names_used(resp)
 
                         save_heavy_result(
@@ -3848,8 +3848,8 @@ def run_heavy_recap(repeats: int = 5, allow_direct: bool = False) -> int:
     experiment = load_experiment()
     reasoning_effort: str = experiment.get("reasoning_effort", "high")
 
-    tasks_safe = load_heavy_tasks(with_facit=False)
-    tasks_facit = load_heavy_tasks(with_facit=True)
+    tasks_safe = load_heavy_tasks(with_answer_key=False)
+    tasks_answer_key = load_heavy_tasks(with_answer_key=True)
 
     model_keys = [
         k for k in HEAVY_RECAP_SCOPE
@@ -3897,13 +3897,13 @@ def run_heavy_recap(repeats: int = 5, allow_direct: bool = False) -> int:
 
         for task_key in HEAVY_TASK_KEYS:
             task = tasks_safe[task_key]
-            assert "facit_grading" not in task, (
-                f"CRITICAL SECURITY VIOLATION: facit_grading in request-path object for {task_key}"
+            assert "answer_key_grading" not in task, (
+                f"CRITICAL SECURITY VIOLATION: answer_key_grading in request-path object for {task_key}"
             )
             base_prompt: str = task["prompt"]
             domain = task["domain"]
             task_id = task["task_id"]
-            facit_grading = tasks_facit[task_key]["facit_grading"]
+            answer_key_grading = tasks_answer_key[task_key]["answer_key_grading"]
 
             for model_key in model_keys:
                 if task_key not in HEAVY_RECAP_SCOPE[model_key]:
@@ -3971,7 +3971,7 @@ def run_heavy_recap(repeats: int = 5, allow_direct: bool = False) -> int:
 
                         account = build_account(resp)
                         cost_usd, snapshot_date = compute_cost(model_key, account)
-                        gr = grade_heavy(domain, resp.answer_text, facit_grading)
+                        gr = grade_heavy(domain, resp.answer_text, answer_key_grading)
                         tools_used = _tool_names_used(resp)
 
                         row = save_heavy_result(

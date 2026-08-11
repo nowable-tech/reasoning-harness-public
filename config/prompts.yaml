@@ -1,5 +1,5 @@
 # Phase 1 prompt set — reasoning benchmark (light suite, 10 tasks).
-# Only the `prompt` field is sent to the model. `facit` (the answer key) is
+# Only the `prompt` field is sent to the model. `answer_key` is
 # blind — used only in Phase 3 (correctness grading) and must NEVER appear
 # in the model request.
 # language_probe: da_simple | da_forcing | da_framed_neutral | da_open
@@ -9,7 +9,7 @@
 # benchmark. See ../README.md for the experiment rationale.
 #
 # EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. Every `prompt` and
-# `facit` string below is content, not repo prose: it was sent to (or is
+# `answer_key` string below is content, not repo prose: it was sent to (or is
 # the blind answer key for) every model in every existing run. Changing
 # wording, even a typo fix, invalidates comparability with those runs.
 
@@ -17,7 +17,7 @@ meta:
   phase: 1
   language_run: danish_only        # first run; an English control is a separate, later experiment
   send_field: prompt               # the only field sent to the model
-  blind_field: facit               # reserved for Phase 3, never sent
+  blind_field: answer_key         # reserved for Phase 3, never sent
 
 prompts:
 
@@ -30,7 +30,7 @@ prompts:
     prompt: |
       Forklar kort og i et venligt sprog, hvad en folkeregisteradresse er, og
       hvorfor man skal melde flytning til folkeregistret. Maksimalt 120 ord.
-    facit: null
+    answer_key: null
 
   - id: P2
     type: da_natural_language
@@ -42,7 +42,7 @@ prompts:
       baggrund kan forstå: "Ansøgeren skal senest fire uger efter afgørelsens
       meddelelse indgive eventuel klage til den myndighed, der har truffet
       afgørelsen, jf. forvaltningslovens regler herom."
-    facit: null
+    answer_key: null
 
   - id: P3
     type: da_legal
@@ -54,7 +54,7 @@ prompts:
       6. marts 2026. Klagefristen er fire uger fra meddelelsen. Borgerens klage er
       modtaget hos kommunen fredag den 3. april 2026. Er klagen rettidig?
       Begrund kort.
-    facit: |
+    answer_key: |
       Ja, rettidig. Fire uger = 28 dage. 6. marts + 28 dage = 3. april, som er
       fristens sidste dag. Klage modtaget samme dag er rettidig.
 
@@ -69,7 +69,7 @@ prompts:
       begrundelse. Borgeren havde oplysninger, der kunne have ændret udfaldet.
       Angiv hvilke to sagsbehandlingsregler kommunen har tilsidesat, og vurder
       kort, om afgørelsen som udgangspunkt er ugyldig.
-    facit: |
+    answer_key: |
       (1) Partshøring (forvaltningslovens § 19) og (2) begrundelsespligten
       (§§ 22-24) er tilsidesat. Begge er garantiforskrifter. Tilsidesættelse
       skaber en formodning for ugyldighed, medmindre myndigheden konkret godtgør,
@@ -85,7 +85,7 @@ prompts:
     prompt: |
       Et tog kører de første 120 km med 150 km/t og derefter de sidste 180 km med
       90 km/t. Hvor mange minutter tager hele turen? Svar med ét tal i minutter.
-    facit: |
+    answer_key: |
       168 minutter. 120/150 = 0,8 t = 48 min; 180/90 = 2 t = 120 min;
       i alt 168 min.
 
@@ -98,7 +98,7 @@ prompts:
       Fire personer — Anna, Bo, Clara og David — kom ind på pladserne nr. 1 til 4
       i et løb. David kom nummer 1. Anna kom før Bo. Clara kom lige efter Bo.
       Angiv den fuldstændige rækkefølge fra nr. 1 til nr. 4.
-    facit: |
+    answer_key: |
       1. David, 2. Anna, 3. Bo, 4. Clara. (Entydig.)
 
   - id: P7
@@ -111,7 +111,7 @@ prompts:
       {navn: string, alder: number, by: string, abonnement: "basis" | "premium"}.
       Returnér kun JSON, intet andet.
       Tekst: "Mette Sørensen er 34 år, bor i Odense og har et premium-abonnement."
-    facit: |
+    answer_key: |
       {"navn":"Mette Sørensen","alder":34,"by":"Odense","abonnement":"premium"}
 
   - id: P8
@@ -130,7 +130,7 @@ prompts:
               if t > største:
                   største = t
           return største
-    facit: |
+    answer_key: |
       `største` initialiseres til 0. For en liste med kun negative tal returneres
       derfor 0 i stedet for det største (mindst negative) tal. Rettelse:
       initialisér `største = tal[0]` (og håndtér eventuelt tom liste særskilt).
@@ -144,7 +144,7 @@ prompts:
       Vurdér fordele og ulemper ved, at en dansk kommune selv-hoster en åben
       sprogmodel i stedet for at bruge et amerikansk API til at behandle
       borgerhenvendelser. Giv en afvejet anbefaling.
-    facit: null
+    answer_key: null
 
   - id: P10
     type: da_open_analysis
@@ -156,4 +156,4 @@ prompts:
       (a) intern videnssøgning på tværs af dokumenter, (b) automatiske udkast til
       kundesvar, (c) en dansk taleassistent til kundeservice. Hvilket bør de
       prioritere, og hvorfor? Begrund din anbefaling.
-    facit: null
+    answer_key: null
