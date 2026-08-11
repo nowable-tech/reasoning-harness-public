@@ -216,7 +216,12 @@ from the raw JSONL. Follow them exactly:
   `src/adapters/base.py`). Two calls to the "same" model can be served by
   different infrastructure with different latency and, occasionally,
   different behavior. Every result row logs `served_by` — do not silently
-  pool across backends without checking it.
+  pool across backends without checking it. **The published panel ran
+  exclusively through OpenRouter** — every scored row's `served_by`/
+  `via_openrouter` field confirms it, no exceptions found. Reproducing via
+  a direct provider API instead is a different measurement, not a
+  reproduction, even with identical prompts — see
+  [Reproducing / extending](#reproducing--extending).
 - **Prices are snapshots**, dated in `config/pricing.yaml`
   (`snapshot_date`). Re-verify against each provider's live pricing before
   trusting absolute cost figures from an old run — several rows are
@@ -250,6 +255,29 @@ Recommended before any real run: `--smoke` first (one call per model), then
 per-model cost breakdown each phase prints at the end.
 
 ## Reproducing / extending
+
+This repo supports two different things — keep them apart:
+
+**Reproducing our run.** Use `config/prompts.yaml` and `src/heavy_tasks.py`
+exactly as shipped. Every prompt and `answer_key`/`facit_grading` string in
+those files is marked `EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT`:
+it was sent to (or graded against for) every model in every published run,
+and any change — including a typo fix — invalidates comparability with the
+published figures. This is the only path that reproduces this repo's own
+numbers. It also depends on routing: **the published panel ran exclusively
+through OpenRouter** (verified — every scored row's `served_by`/
+`via_openrouter` field confirms it, zero exceptions). Reproducing via a
+direct provider API instead is not a comparable measurement, even with the
+same prompts — see the backend-lottery caveat above. The harness blocks
+this by default (`assert_no_silent_direct_route`, `src/model_resolver.py`):
+a direct provider key present in your environment will stop the run before
+the first call unless you pass `--allow-direct` explicitly.
+
+**Running your own task set.** Swap in your own `config/prompts.yaml` /
+`src/heavy_tasks.py` content and `config/panel.yaml` models — this is a
+fully supported use of the harness. But your results are a new, independent
+measurement, not a reproduction of this repo's published numbers. Say so
+explicitly in anything you publish from a modified task set.
 
 - **Recompute headline figures from raw data**: `scripts/compute_findings.py
   <results_dir>` reads a results tree (this repo's own `results/` if you've
