@@ -401,6 +401,12 @@ LANGCOST_PILOT_TASK: str = "M1"
 
 # Steering prefixes for --steer mode (Step 4 scaffold — do not run together
 # with the unsteered baseline; keep run_ids separate).
+#
+# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. These strings are sent
+# verbatim to the model as the steering treatment itself (the "da" prefix
+# is the manipulation the language-cost experiment measures the effect of,
+# not incidental repo text). Any change invalidates comparability with
+# existing runs.
 STEER_PREFIX: dict[str, str] = {
     "da": "Tænk og ræsonnér på dansk.\n\n",
     "en": "Think and reason in English.\n\n",
@@ -3027,6 +3033,12 @@ TOOLS3_TOOL_RELEVANT_PROMPTS: dict[str, str] = {
 }
 TOOLS3_CONTROL_GROUP: set[str] = {"P1", "P2", "P9", "P10"}
 
+# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. This is the literal tool
+# invitation text sent to the model for --tools3 and --heavy's invited_auto
+# condition. Reported grab-rate figures rest on this exact wording; any
+# change invalidates comparability with existing runs. Duplicated verbatim
+# in run_auto_router.py and run_opus5_panel.py (import from here instead of
+# re-defining — see those files).
 TOOLS3_INVITATION = (
     "\n\nDu har adgang til to værktøjer: python_exec (kør Python for eksakt "
     "beregning) og web_search (slå fakta op). Brug dem hvis de hjælper med at "

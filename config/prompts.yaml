@@ -7,6 +7,11 @@
 #
 # Task text is Danish by design — this is a Danish-language reasoning
 # benchmark. See ../README.md for the experiment rationale.
+#
+# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. Every `prompt` and
+# `facit` string below is content, not repo prose: it was sent to (or is
+# the blind answer key for) every model in every existing run. Changing
+# wording, even a typo fix, invalidates comparability with those runs.
 
 meta:
   phase: 1

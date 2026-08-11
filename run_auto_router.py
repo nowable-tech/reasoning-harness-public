@@ -81,6 +81,10 @@ HEAVY_CONDITIONS: tuple[str, ...] = ("baseline", "invited_auto")
 
 # Verbatim from run.py's TOOLS3_INVITATION / HEAVY_INVITATION — same source,
 # unchanged, per the brief's "samme prompts, uændrede" requirement.
+#
+# EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT. See run.py's
+# TOOLS3_INVITATION for the freeze note; grab-rate figures rest on this
+# exact wording.
 HEAVY_INVITATION = (
     "\n\nDu har adgang til to værktøjer: python_exec (kør Python for eksakt "
     "beregning) og web_search (slå fakta op). Brug dem hvis de hjælper med at "

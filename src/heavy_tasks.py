@@ -13,6 +13,15 @@ SECURITY INVARIANT: load_heavy_tasks() defaults to with_facit=False and never
 includes grading data in that path — mirrors config_loader.load_prompts()'s
 strip-before-return contract. with_facit=True is valid ONLY on the grading
 path (never sent to a model).
+
+EXPERIMENTAL CONTENT — DO NOT TRANSLATE OR EDIT the fetched task text, the
+CODE_INSTRUCTION/finance instruction strings below, or facit_grading
+values. They are the literal content sent to (or graded against for) every
+model in every existing run; the base HumanEval/FinQA text is already
+English by upstream license, but the instruction wrappers and facit here
+are ours and are just as frozen as config/prompts.yaml's — see that file's
+header. The invited_auto condition additionally appends run.py's
+TOOLS3_INVITATION (Danish, frozen separately there).
 """
 from __future__ import annotations
 
