@@ -173,6 +173,7 @@ def _required_env_var(provider: str) -> str | None:
         "anthropic": "ANTHROPIC_API_KEY",
         "gemma": None,           # Gemma uses OPENROUTER_API_KEY (checked via has_or)
         "mistral": None,         # Mistral uses OPENROUTER_API_KEY (checked via has_or)
+        "thinkingmachines": None,  # Inkling uses OPENROUTER_API_KEY (checked via has_or) — no direct API exists for this model
         "minimax": "MINIMAX_API_KEY",
         "google": "GOOGLE_API_KEY",
         "local": None,

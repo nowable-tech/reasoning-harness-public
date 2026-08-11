@@ -19,13 +19,23 @@ def compute_cost(model_key: str, account: "TokenAccount") -> tuple[float, str]:
              + (reasoning + output)*p_out
 
     Prices are read exclusively from config/pricing.yaml — never hardcoded here.
+
+    Raises KeyError if model_key has no pricing.yaml entry. This used to
+    return (0.0, snapshot_date) silently — a missing entry produced a
+    valid-looking zero cost with no signal anywhere, which would corrupt
+    every dollar-based aggregate downstream (correct_per_dollar, sum-cost
+    totals) without warning. Failing loudly here is the fix.
     """
     pricing = load_pricing()
     snapshot_date: str = pricing["snapshot_date"]
     model_prices: dict | None = pricing["models"].get(model_key)
 
     if model_prices is None:
-        return 0.0, snapshot_date
+        raise KeyError(
+            f"compute_cost: no pricing.yaml entry for model_key={model_key!r}. "
+            f"Add a models.{model_key} block to config/pricing.yaml before running "
+            f"this model — a missing entry must not silently produce cost_usd=0.0."
+        )
 
     def mtok(tokens: int, price_per_mtok: float) -> float:
         return (tokens / 1_000_000) * price_per_mtok
