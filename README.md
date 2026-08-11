@@ -290,4 +290,4 @@ CC BY 4.0-licensed, redistributed under its own license).
 If you use this harness or its results, please cite:
 
 > Lars Harder / Nowable, "Reasoning-Economy Benchmark Harness" (2026).
-> https://github.com/nowable-tech/reasoning-harness-public
+> https://github.com/nowable-tech/reasoning-economy-harness
